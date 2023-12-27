@@ -9,10 +9,12 @@ from typing import Tuple, List, Dict
 
 def find_classes(directory: str) -> Tuple[List[str], Dict[str, int]]:
     """
-    This function gives the result of the classes present inside the custom dataset. It has one parameter.
+    This function gives the result of the classes present inside the custom dataset.
 
-    :param directory: The directory of the dataset passed.
-    :return: Returns a two-length tuple of List type and Dict type.
+    Argument:
+    directory: The directory of the dataset passed.
+
+    Returns a two-length tuple of List type and Dict type.
     """
     classes = sorted(entry.name for entry in os.scandir(directory) if entry.is_dir())
 
