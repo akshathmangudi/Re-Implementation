@@ -10,11 +10,10 @@ def data_setup(
     # If data path doesn't exist, download and create one...
     """
     This function performs the download part of the Food101 dataset. If the dataset folder already exists, no issue. Else
-    the function uses the request library to download the zip file and extracts it.
+    the function uses the request library to download the zip file and extracts. This function has two parameters.
 
-    Arguments:
-    data_path: The root path 'dataset'
-    image_path: The dataset path 'Food101'
+    :param data_path: The root path 'dataset'
+    :param image_path: The dataset path 'Food101'
 
     These paths are checked for their existence and if it fails, a new folder is created.
     """

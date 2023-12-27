@@ -9,13 +9,11 @@ torch.manual_seed(42)
 def patchify(images, n_patches):
     """
     In order to "sequentially" pass in the images, we can break down the main image into multiple sub-images
-    and map them to a vector. This is exactly what this function does.
+    and map them to a vector. This is exactly what this function does. It has two parameters.
 
-    Arguments:
-    images: The image passed into this function
-    n_patches: The number of patches to split the image into.
-
-    Returns our patches aka the sub-images.
+    :param images: The image passed into this function
+    :param n_patches: The number of patches to split the image into.
+    :return: Returns the patches aka the sub-images.
     """
     n, c, h, w = images.shape
 
@@ -38,11 +36,9 @@ def positional_embeddings(sequence_length, d):
     are classified into the first few dimensions while low frequency values are added on to the latter dimensions. This
     function performs exactly that. It has two parameters.
 
-    Arguments:
-    sequence_length: The number of tokens for the dataset.
-    d: The dimensionality for each token.
-
-    Returns a matrix where each (i,j) is added as token i in dimension j.
+    :param sequence_length: The number of tokens for the dataset.
+    :param d: The dimensionality for each token.
+    :return: A matrix where each (i,j) is added as token i in dimension j.
     """
     result = torch.ones(sequence_length, d)
     for i in range(sequence_length):
