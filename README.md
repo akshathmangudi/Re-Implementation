@@ -4,9 +4,9 @@ A repository that holds my implementation of machine learning papers.
 
 Current re-implementations are:
 
-| Paper                                                                                                          | Code         | Status    |
-|----------------------------------------------------------------------------------------------------------------|--------------|-----------|
-| [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929) | [ViT](./vit) | Completed |
+| Paper                                                                                                          | Code             | Status    |
+|----------------------------------------------------------------------------------------------------------------|------------------|-----------|
+| [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929) | [ViT](./src/vit) | Completed |
 
 ## Contributions: 
 These are my personal implementations in order to educate myself. That being said, if there are any issues with the code, such as incorrect math, 
