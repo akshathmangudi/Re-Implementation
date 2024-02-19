@@ -8,6 +8,7 @@ Current re-implementations are:
 |----------------------------------------------------------------------------------------------------------------|----------------------|-----------|
 | [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929) | [ViT](./src/vit)     | Completed |
 | [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)                               | [ResNet](./src/resnet) | Completed |
+| [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | [Transformers](./src/attention) | Close to Completion |
 | [Global Context Vision Transformers](https://arxiv.org/abs/2206.09959) | [GCViT](./src/gcvit) | In Progress |
 | [Accelerating the Super-Resolution Convolutional Network](https://arxiv.org/abs/1608.00367) | [FSRCNN](./src/fsrcnn) | In Progress |
 | [T-Rex: Counting by Visual Prompting](https://arxiv.org/abs/2311.13596) | T-Rex | In Progress |
