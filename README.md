@@ -11,7 +11,9 @@ Current re-implementations are:
 | [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | [Transformers](./src/attention) | Close to Completion |
 | [Global Context Vision Transformers](https://arxiv.org/abs/2206.09959) | [GCViT](./src/gcvit) | In Progress |
 | [Accelerating the Super-Resolution Convolutional Network](https://arxiv.org/abs/1608.00367) | [FSRCNN](./src/fsrcnn) | In Progress |
-| [T-Rex: Counting by Visual Prompting](https://arxiv.org/abs/2311.13596) | T-Rex | In Progress |
+| [T-Rex: Counting by Visual Prompting](https://arxiv.org/abs/2311.13596) | [T-Rex](./src/trex) | In Progress |
+| [Swin Transformer: Heirarchial Vision Transformer using Shifted Windows](https://arxiv.org/abs/2103.14030) | [Swin](./src/swin) | In Progress |
+| [Autoencoders](https://arxiv.org/abs/2003.05991) | [Autoencoders](./src/autoencoders) | In Progress |
 
 ## Contributions:
 
