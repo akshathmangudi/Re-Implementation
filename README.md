@@ -6,13 +6,13 @@ Current re-implementations are:
 
 | Paper                                                                                                          | Code                 | Status    |
 |----------------------------------------------------------------------------------------------------------------|----------------------|-----------|
-| [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929) | [ViT](./src/vit)     | Completed |
-| [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)                               | [ResNet](./src/resnet) | Completed |
-| [Autoencoders](https://arxiv.org/abs/2003.05991) | [Autoencoders](./src/autoencoders) | Completed |
-| [Swin Transformer: Heirarchial Vision Transformer using Shifted Windows](https://arxiv.org/abs/2103.14030) | [Swin](./src/swin) | Completed |
-| [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | [Transformers](./src/attention) | Close to Completion |
-| [Accelerating the Super-Resolution Convolutional Network](https://arxiv.org/abs/1608.00367) | [FSRCNN](./src/fsrcnn) | In Progress |
-| [T-Rex: Counting by Visual Prompting](https://arxiv.org/abs/2311.13596) | [T-Rex](./src/trex) | In Progress |
+| [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929) | [ViT](./vit)     | Completed |
+| [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)                               | [ResNet](./resnet) | Completed |
+| [Autoencoders](https://arxiv.org/abs/2003.05991) | [Autoencoders](./autoencoders) | Completed |
+| [Swin Transformer: Heirarchial Vision Transformer using Shifted Windows](https://arxiv.org/abs/2103.14030) | [Swin](./swin) | Completed |
+| [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | [Transformers](./attention) | Close to Completion |
+| [Accelerating the Super-Resolution Convolutional Network](https://arxiv.org/abs/1608.00367) | [FSRCNN](./fsrcnn) | In Progress |
+| [T-Rex: Counting by Visual Prompting](https://arxiv.org/abs/2311.13596) | [T-Rex](./trex) | In Progress |
 
 ## Contributions:
 
