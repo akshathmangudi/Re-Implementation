@@ -161,3 +161,7 @@ cython_debug/
 dataset/
 .git/
 data/
+.vscode/
+notebooks/
+Set14/
+dataset.zip

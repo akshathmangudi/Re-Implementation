@@ -11,8 +11,7 @@ Current re-implementations are:
 | [Autoencoders](https://arxiv.org/abs/2003.05991) | [Autoencoders](./autoencoders) | Completed |
 | [Swin Transformer: Heirarchial Vision Transformer using Shifted Windows](https://arxiv.org/abs/2103.14030) | [Swin](./swin) | Completed |
 | [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | [Transformers](./attention) | Completed
-| [Accelerating the Super-Resolution Convolutional Network](https://arxiv.org/abs/1608.00367) | [FSRCNN](./fsrcnn) | In Progress |
-| [T-Rex: Counting by Visual Prompting](https://arxiv.org/abs/2311.13596) | [T-Rex](./trex) | In Progress |
+| [Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network](https://arxiv.org/abs/1609.04802) | [SRGAN](./srgan) | In Progress |
 
 ## Contributions:
 
