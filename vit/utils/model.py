@@ -52,6 +52,12 @@ def positional_embeddings(sequence_length, d):
 
 
 class MSA(nn.Module):
+    """
+    This is the template implementation of the "Multi-Scale Attention" Layer. 
+
+    The query, key and value mapping are matrix-multipled against each other in order to 
+    find the attention, or, the relation of a word and its interaction with surrounding words. 
+    """
     def __init__(self, d, n_heads=4):
         super(MSA, self).__init__()
         self.d = d
@@ -85,6 +91,11 @@ class MSA(nn.Module):
 
 
 class Residual(nn.Module):
+    """
+    This is how a Residual Layer is built. The MSA that we have written will be a part 
+    of this residual block right here. 
+    """
+
     def __init__(self, hidden_d, n_heads, mlp_ratio=4):
         super(Residual, self).__init__()
         self.hidden_d = hidden_d
@@ -104,6 +115,13 @@ class Residual(nn.Module):
 
 
 class ViT(nn.Module):
+    """
+    The workflow will be as follows. 
+        1. Find the linear mapping of the input
+        2. Embed them using the function that we have written
+        3. Use 'n' MSA blocks and add a linear and a softmax layer at the end
+    """
+
     def __init__(self, chw, n_patches=16, n_blocks=2, hidden_d=8, n_heads=4, out_d=10):
         super(ViT, self).__init__()
 
