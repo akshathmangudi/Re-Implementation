@@ -16,18 +16,14 @@ def train(model, train_loader, criterion, optimizer, device):
     for images, labels in tqdm(train_loader, desc="Training", leave=False):
         images, labels = images.to(device), labels.to(device)
 
-        # Zero the parameter gradients
         optimizer.zero_grad()
 
-        # Forward pass
         outputs = model(images)
         loss = criterion(outputs, labels)
 
-        # Backward pass and optimize
         loss.backward()
         optimizer.step()
 
-        # Track loss and accuracy
         running_loss += loss.item() * images.size(0)
         _, predicted = outputs.max(1)
         correct += predicted.eq(labels).sum().item()
@@ -44,16 +40,13 @@ def test(model, test_loader, criterion, device):
     correct = 0
     total = 0
 
-    # Wrap the test_loader in tqdm for a progress bar
     with torch.no_grad():
         for images, labels in tqdm(test_loader, desc="Testing", leave=False):
             images, labels = images.to(device), labels.to(device)
 
-            # Forward pass
             outputs = model(images)
             loss = criterion(outputs, labels)
 
-            # Track loss and accuracy
             running_loss += loss.item() * images.size(0)
             _, predicted = outputs.max(1)
             correct += predicted.eq(labels).sum().item()

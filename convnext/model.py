@@ -28,19 +28,19 @@ class ConvNeXt(nn.Module):
     def __init__(self, in_channels=1, num_classes=10):
         super(ConvNeXt, self).__init__()
         self.stem = nn.Conv2d(
-            in_channels, 96, kernel_size=4, stride=4)  # Patchify stem
+            in_channels, 96, kernel_size=4, stride=4)
         self.block1 = ConvNeXtBlock(96, 192)
         self.block2 = ConvNeXtBlock(192, 384)
         self.block3 = ConvNeXtBlock(384, 768)
-        self.gap = nn.AdaptiveAvgPool2d(1)  # Global average pooling
-        self.fc = nn.Linear(768, num_classes)  # Final fully connected layer
+        self.gap = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Linear(768, num_classes)
 
     def forward(self, x):
         x = self.stem(x)
         x = self.block1(x)
         x = self.block2(x)
         x = self.block3(x)
-        x = self.gap(x)  # Global average pooling to [batch_size, 768, 1, 1]
-        x = x.view(x.size(0), -1)  # Flatten to [batch_size, 768]
+        x = self.gap(x)
+        x = x.view(x.size(0), -1)
         x = self.fc(x)
         return x
