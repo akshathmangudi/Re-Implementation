@@ -12,7 +12,7 @@ Current re-implementations are:
 | [Swin Transformer: Heirarchial Vision Transformer using Shifted Windows](https://arxiv.org/abs/2103.14030) | [Swin](./swin) | Completed |
 | [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | [Transformers](./attention) | Completed | 
 | [A ConvNet for the 2020s](https://arxiv.org/pdf/2201.03545) | [ConvNeXt](./convnext/) | Completed | 
-| [Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network](https://arxiv.org/abs/1609.04802) | [SRGAN](./srgan) | In Progress |
+| [Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network](https://arxiv.org/abs/1609.04802) | [SRGAN](./srgan) | Completed |
 
 ## Contributions:
 

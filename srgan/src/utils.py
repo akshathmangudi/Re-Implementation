@@ -1,8 +1,9 @@
-import os
 import shutil
 import requests
 import zipfile
 from pathlib import Path
+from torchvision import transforms
+from config import SCALE_FACTOR
 
 root_dir = Path("/Users/Aksha/github/Re-Implementation/srgan")
 dataset_dir = root_dir / "dataset"
@@ -16,7 +17,8 @@ def download_dataset(root_dir: Path) -> None:
         root_dir.mkdir(parents=True, exist_ok=True)
 
         with open(root_dir / "dataset.zip", "wb") as file:
-            request = requests.get("https://figshare.com/ndownloader/files/38256855")
+            request = requests.get(
+                "https://figshare.com/ndownloader/files/38256855")
             print("Downloading...")
             file.write(request.content)
 
@@ -30,10 +32,12 @@ def create_dirs():
         Path.mkdir(root_dir / "dataset") if not Path.exists(dataset_dir) else None
     )
     lr_dir = (
-        Path.mkdir(dataset_dir / "lr") if not Path.exists(dataset_dir / "lr") else None
+        Path.mkdir(dataset_dir /
+                   "lr") if not Path.exists(dataset_dir / "lr") else None
     )
     hr_dir = (
-        Path.mkdir(dataset_dir / "hr") if not Path.exists(dataset_dir / "hr") else None
+        Path.mkdir(dataset_dir /
+                   "hr") if not Path.exists(dataset_dir / "hr") else None
     )
 
 
@@ -70,3 +74,18 @@ def delete_dir(dir: Path):
         print(f"Removed directory: {dir}")
     except OSError as e:
         print(f"Error: {e.strerror}")
+
+
+def get_transform(is_hr=True, scale_factor=SCALE_FACTOR):
+    if is_hr:
+        return transforms.Compose([
+            transforms.Resize((32 * scale_factor, 32 * scale_factor)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])
+    else:
+        return transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])
