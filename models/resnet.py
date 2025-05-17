@@ -1,17 +1,20 @@
-import torch.nn as nn 
+import torch.nn as nn
 from models.templates.base import BaseClassifier
+
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1, downsample=None):
         super(ResidualBlock, self).__init__()
         self.conv1 = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1),
+            nn.Conv2d(
+                in_channels, out_channels, kernel_size=3, stride=stride, padding=1
+            ),
             nn.BatchNorm2d(out_channels),
-            nn.ReLU()
+            nn.ReLU(),
         )
         self.conv2 = nn.Sequential(
             nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(out_channels)
+            nn.BatchNorm2d(out_channels),
         )
         self.downsample = downsample
         self.relu = nn.ReLU()
@@ -29,13 +32,15 @@ class ResidualBlock(nn.Module):
 
 
 class ResNet(BaseClassifier):
-    def __init__(self, block, layers, in_channels=3, num_classes=10, model_name="resnet"):
+    def __init__(
+        self, block, layers, in_channels=3, num_classes=10, model_name="resnet"
+    ):
         super(ResNet, self).__init__(num_classes=num_classes, model_name=model_name)
         self.inplanes = 64
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels, 64, kernel_size=7, stride=2, padding=3),
             nn.BatchNorm2d(64),
-            nn.ReLU()
+            nn.ReLU(),
         )
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer0 = self._make_layer(block, 64, layers[0], stride=1)

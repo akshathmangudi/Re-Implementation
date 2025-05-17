@@ -35,7 +35,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV=/home/akshathm/work/Re-Implementation/implement
+VIRTUAL_ENV=/home/akshathm/work/refrakt/refrakt_venv
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
@@ -52,9 +52,9 @@ fi
 
 if [ -z "${VIRTUAL_ENV_DISABLE_PROMPT:-}" ] ; then
     _OLD_VIRTUAL_PS1="${PS1:-}"
-    PS1='(implement) '"${PS1:-}"
+    PS1='(refrakt_venv) '"${PS1:-}"
     export PS1
-    VIRTUAL_ENV_PROMPT='(implement) '
+    VIRTUAL_ENV_PROMPT='(refrakt_venv) '
     export VIRTUAL_ENV_PROMPT
 fi
 

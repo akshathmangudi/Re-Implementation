@@ -1,17 +1,24 @@
 import math
 import torch
-import torch.nn as nn 
+import torch.nn as nn
 from einops import rearrange
 from torch.nn import functional
+
 
 class MSA(nn.Module):
     def __init__(self, d, n_heads=4):
         super(MSA, self).__init__()
         assert d % n_heads == 0
         d_head = d // n_heads
-        self.q_mappings = nn.ModuleList([nn.Linear(d_head, d_head) for _ in range(n_heads)])
-        self.k_mappings = nn.ModuleList([nn.Linear(d_head, d_head) for _ in range(n_heads)])
-        self.v_mappings = nn.ModuleList([nn.Linear(d_head, d_head) for _ in range(n_heads)])
+        self.q_mappings = nn.ModuleList(
+            [nn.Linear(d_head, d_head) for _ in range(n_heads)]
+        )
+        self.k_mappings = nn.ModuleList(
+            [nn.Linear(d_head, d_head) for _ in range(n_heads)]
+        )
+        self.v_mappings = nn.ModuleList(
+            [nn.Linear(d_head, d_head) for _ in range(n_heads)]
+        )
         self.d = d
         self.n_heads = n_heads
         self.d_head = d_head
@@ -22,10 +29,16 @@ class MSA(nn.Module):
         for sequence in sequences:
             seq_result = []
             for head in range(self.n_heads):
-                q = self.q_mappings[head](sequence[:, head * self.d_head:(head + 1) * self.d_head])
-                k = self.k_mappings[head](sequence[:, head * self.d_head:(head + 1) * self.d_head])
-                v = self.v_mappings[head](sequence[:, head * self.d_head:(head + 1) * self.d_head])
-                attention = self.softmax(q @ k.T / (self.d_head ** 0.5))
+                q = self.q_mappings[head](
+                    sequence[:, head * self.d_head : (head + 1) * self.d_head]
+                )
+                k = self.k_mappings[head](
+                    sequence[:, head * self.d_head : (head + 1) * self.d_head]
+                )
+                v = self.v_mappings[head](
+                    sequence[:, head * self.d_head : (head + 1) * self.d_head]
+                )
+                attention = self.softmax(q @ k.T / (self.d_head**0.5))
                 seq_result.append(attention @ v)
             result.append(torch.hstack(seq_result))
         return torch.stack(result)
@@ -40,13 +53,14 @@ class Residual(nn.Module):
         self.mlp = nn.Sequential(
             nn.Linear(hidden_d, mlp_ratio * hidden_d),
             nn.GELU(),
-            nn.Linear(mlp_ratio * hidden_d, hidden_d)
+            nn.Linear(mlp_ratio * hidden_d, hidden_d),
         )
 
     def forward(self, x):
         out = x + self.mhsa(self.norm1(x))
         out = out + self.mlp(self.norm2(out))
         return out
+
 
 class InputEmbeddings(nn.Module):
     def __init__(self, d_model: int, vocab_size: int):
@@ -57,6 +71,7 @@ class InputEmbeddings(nn.Module):
 
     def forward(self, x):
         return self.embedding(x) * math.sqrt(self.d_model)
+
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model: int, seq_len: int, dropout: float) -> None:
@@ -239,7 +254,8 @@ class Projection(nn.Module):
 
     def forward(self, x):
         return torch.log_softmax(self.proj(x), dim=-1)
-    
+
+
 class Embedding(nn.Module):
     def __init__(self, patch_size=4, C=96):
         super().__init__()
@@ -249,23 +265,27 @@ class Embedding(nn.Module):
 
     def forward(self, x):
         x = self.linear(x)
-        x = rearrange(x, 'b c h w -> b (h w) c')
+        x = rearrange(x, "b c h w -> b (h w) c")
         x = self.relu(self.layer_norm(x))
         return x
-    
+
+
 class Merge(nn.Module):
     def __init__(self, C):
         super().__init__()
-        self.linear = nn.Linear(4*C, 2*C)
-        self.norm = nn.LayerNorm(2*C)
+        self.linear = nn.Linear(4 * C, 2 * C)
+        self.norm = nn.LayerNorm(2 * C)
 
     def forward(self, x):
         height = width = int(math.sqrt(x.shape[1]) / 2)
-        x = rearrange(x, 'b (h s1 w s2) c -> b (h w) (s2 s1 c)', s1=2, s2=2, h=height, w=width)
+        x = rearrange(
+            x, "b (h s1 w s2) c -> b (h w) (s2 s1 c)", s1=2, s2=2, h=height, w=width
+        )
         x = self.linear(x)
         x = self.norm(x)
         return x
-    
+
+
 class ShiftedWindowMSA(nn.Module):
     def __init__(self, embed_dim, n_heads, window_size, mask=False):
         super().__init__()
@@ -273,7 +293,7 @@ class ShiftedWindowMSA(nn.Module):
         self.n_heads = n_heads
         self.window_size = window_size
         self.mask = mask
-        self.proj1 = nn.Linear(embed_dim, 3*embed_dim)
+        self.proj1 = nn.Linear(embed_dim, 3 * embed_dim)
         self.proj2 = nn.Linear(embed_dim, embed_dim)
         self.embeddings = RelativeEmbedding()
 
@@ -281,13 +301,20 @@ class ShiftedWindowMSA(nn.Module):
         h_dim = self.embed_dim / self.n_heads
         height = width = int(math.sqrt(x.shape[1]))
         x = self.proj1(x)
-        x = rearrange(x, 'b (h w) (c K) -> b h w c K', K=3, h=height, w=width)
+        x = rearrange(x, "b (h w) (c K) -> b h w c K", K=3, h=height, w=width)
 
         if self.mask:
-            x = torch.roll(x, (-self.window_size // 2, -self.window_size // 2), dims=(1, 2))
+            x = torch.roll(
+                x, (-self.window_size // 2, -self.window_size // 2), dims=(1, 2)
+            )
 
-        x = rearrange(x, 'b (h m1) (w m2) (H E) K -> b H h w (m1 m2) E K',
-                      H = self.n_heads, m1 = self.window_size, m2 = self.window_size)
+        x = rearrange(
+            x,
+            "b (h m1) (w m2) (H E) K -> b H h w (m1 m2) E K",
+            H=self.n_heads,
+            m1=self.window_size,
+            m2=self.window_size,
+        )
 
         Q, K, V = x.chunk(3, dim=6)
         Q, K, V = Q.squeeze(-1), K.squeeze(-1), V.squeeze(-1)
@@ -296,43 +323,63 @@ class ShiftedWindowMSA(nn.Module):
 
         if self.mask:
             row_mask = torch.zeros((self.window_size**2, self.window_size**2)).cuda()
-            row_mask[-self.window_size * (self.window_size//2):, 0:-self.window_size * (self.window_size//2)] = float('-inf')
-            row_mask[0:-self.window_size * (self.window_size//2), -self.window_size * (self.window_size//2):] = float('-inf')
-            column_mask = rearrange(row_mask, '(r w1) (c w2) -> (w1 r) (w2 c)', w1 = self.window_size, w2 = self.window_size).cuda()
+            row_mask[
+                -self.window_size * (self.window_size // 2) :,
+                0 : -self.window_size * (self.window_size // 2),
+            ] = float("-inf")
+            row_mask[
+                0 : -self.window_size * (self.window_size // 2),
+                -self.window_size * (self.window_size // 2) :,
+            ] = float("-inf")
+            column_mask = rearrange(
+                row_mask,
+                "(r w1) (c w2) -> (w1 r) (w2 c)",
+                w1=self.window_size,
+                w2=self.window_size,
+            ).cuda()
             att_scores[:, :, -1, :] += row_mask
             att_scores[:, :, :, -1] += column_mask
 
         att = functional.softmax(att_scores, dim=-1) @ V
-        x = rearrange(att, 'b H h w (m1 m2) E -> b (h m1) (w m2) (H E)', m1 = self.window_size, m2=self.window_size)
+        x = rearrange(
+            att,
+            "b H h w (m1 m2) E -> b (h m1) (w m2) (H E)",
+            m1=self.window_size,
+            m2=self.window_size,
+        )
 
         if self.mask:
-            x = torch.roll(x, (self.window_size//2, self.window_size//2), (1, 2))
-        x = rearrange(x, 'b h w c -> b (h w) c')
+            x = torch.roll(x, (self.window_size // 2, self.window_size // 2), (1, 2))
+        x = rearrange(x, "b h w c -> b (h w) c")
         return self.proj2(x)
+
 
 class RelativeEmbedding(nn.Module):
     def __init__(self, window_size=7):
         super().__init__()
-        b = nn.Parameter(torch.randn(2*window_size-1, 2*window_size-1))
-        x = torch.arange(1, window_size+1, 1/window_size)
-        x = (x[None, :]-x[:, None]).int()
-        y = torch.concat([torch.arange(1, window_size+1)] * window_size)
-        y = (y[None, :]-y[:, None])
-        self.embeddings = nn.Parameter((b[x[:,:], y[:,:]]), requires_grad=False)
+        b = nn.Parameter(torch.randn(2 * window_size - 1, 2 * window_size - 1))
+        x = torch.arange(1, window_size + 1, 1 / window_size)
+        x = (x[None, :] - x[:, None]).int()
+        y = torch.concat([torch.arange(1, window_size + 1)] * window_size)
+        y = y[None, :] - y[:, None]
+        self.embeddings = nn.Parameter((b[x[:, :], y[:, :]]), requires_grad=False)
 
     def forward(self, x):
         return x + self.embeddings
-    
+
+
 class SwinBlock(nn.Module):
     def __init__(self, embed_dim, num_heads, window_size, mask):
         super().__init__()
         self.layer_norm = nn.LayerNorm(embed_dim)
         self.dropout = nn.Dropout(0.1)
-        self.wmsa = ShiftedWindowMSA(embed_dim=embed_dim, n_heads=num_heads, window_size=window_size, mask=mask)
+        self.wmsa = ShiftedWindowMSA(
+            embed_dim=embed_dim, n_heads=num_heads, window_size=window_size, mask=mask
+        )
         self.mlp = nn.Sequential(
-            nn.Linear(embed_dim, embed_dim*4),
+            nn.Linear(embed_dim, embed_dim * 4),
             nn.GELU(),
-            nn.Linear(embed_dim*4, embed_dim)
+            nn.Linear(embed_dim * 4, embed_dim),
         )
 
     def forward(self, x):
@@ -342,11 +389,19 @@ class SwinBlock(nn.Module):
         x = self.mlp(x)
         return self.dropout(x + res1)
 
+
 class AlternateSwin(nn.Module):
     def __init__(self, embed_dim, num_heads, window_size=7):
         super().__init__()
-        self.wsa = SwinBlock(embed_dim=embed_dim, num_heads=num_heads, window_size=window_size, mask=False)
-        self.wmsa = SwinBlock(embed_dim=embed_dim, num_heads=num_heads, window_size=window_size, mask=True)
+        self.wsa = SwinBlock(
+            embed_dim=embed_dim,
+            num_heads=num_heads,
+            window_size=window_size,
+            mask=False,
+        )
+        self.wmsa = SwinBlock(
+            embed_dim=embed_dim, num_heads=num_heads, window_size=window_size, mask=True
+        )
 
     def forward(self, x):
         return self.wmsa(self.wsa(x))

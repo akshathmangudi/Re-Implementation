@@ -1,5 +1,6 @@
 import torch.nn as nn
-from models.templates.model import BaseClassifier
+from models.templates.base import BaseClassifier
+
 
 class ConvNeXtBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):

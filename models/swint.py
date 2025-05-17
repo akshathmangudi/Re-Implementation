@@ -1,6 +1,7 @@
 import torch.nn as nn
 from utils.classes import Embedding, Merge, AlternateSwin
 
+
 class SwinTransformer(nn.Module):
     def __init__(self):
         super().__init__()
