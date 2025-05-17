@@ -12,7 +12,7 @@ from config import get_weights
 
 
 from pathlib import Path
-from model import (
+from models.transformers import (
     InputEmbeddings,
     PositionalEncoding,
     MHA,

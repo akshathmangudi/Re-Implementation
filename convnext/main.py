@@ -1,7 +1,7 @@
 import torch
 from tqdm import tqdm
 from torch import optim
-from model import ConvNeXt
+from models.convnext import ConvNeXt
 from utils import create_dataloader
 from torchvision import datasets, transforms
 

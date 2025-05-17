@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import gc
 
-from utils.model import ResNet, ResidualBlock
+from models.resnet import ResNet, ResidualBlock
 from utils.data_setup import data_loader
 
 

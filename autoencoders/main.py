@@ -2,7 +2,7 @@ import torch
 import config
 import torch.nn as nn
 import torch.optim as optim
-from model import AutoEncoder
+from models.autoencoder import AutoEncoder
 from utils import visualize_reconstructions
 from torchvision import transforms, datasets
 

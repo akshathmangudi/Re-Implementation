@@ -1,5 +1,5 @@
 import torch
-from model import SwinTransformer
+from models.swint import SwinTransformer
 
 device = 'cuda' if torch.cuda.is_available else 'cpu'
 

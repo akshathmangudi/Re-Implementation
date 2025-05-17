@@ -11,7 +11,7 @@ from torch.optim import Adam
 
 from utils.data_setup import data_setup
 from utils.dataloader import CreateDataset
-from utils.model import ViT
+from models.vit import ViT
 
 np.random.seed(42)
 torch.manual_seed(42)
