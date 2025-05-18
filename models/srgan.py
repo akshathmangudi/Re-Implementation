@@ -2,6 +2,7 @@ import math
 import torch
 import torch.nn as nn
 from models.templates.models import BaseGAN
+from registry.model_registry import register_model
 from models.resnet import ResidualBlock as BaseResidualBlock
 
 

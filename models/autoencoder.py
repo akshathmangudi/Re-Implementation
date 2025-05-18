@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from registry.model_registry import register_model
 from models.templates.models import BaseAutoEncoder
 
 @register_model("autoencoder")
