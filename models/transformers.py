@@ -9,7 +9,6 @@ from utils.classes import (
     Projection,
 )
 
-
 class Transformer(nn.Module):
     def __init__(
         self,

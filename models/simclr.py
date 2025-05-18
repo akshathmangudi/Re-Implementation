@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from templates.models import BaseContrastiveModel
 
-
+@register_model("simclr")
 class SimCLRModel(BaseContrastiveModel):
     def __init__(self, proj_dim=128):
         super().__init__(

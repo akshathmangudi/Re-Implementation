@@ -1,7 +1,6 @@
 import torch.nn as nn
 from torchvision.models import vgg19
-from templates.base import BaseLoss
-
+from losses.templates.base import BaseLoss
 
 class PerceptualLoss(BaseLoss):
     def __init__(self, device="cuda"):

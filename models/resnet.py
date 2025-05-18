@@ -1,5 +1,5 @@
 import torch.nn as nn
-from models.templates.base import BaseClassifier
+from models.templates.models import BaseClassifier
 
 
 class ResidualBlock(nn.Module):
@@ -30,7 +30,7 @@ class ResidualBlock(nn.Module):
         out = self.relu(out)
         return out
 
-
+@register_model("resnet")
 class ResNet(BaseClassifier):
     def __init__(
         self, block, layers, in_channels=3, num_classes=10, model_name="resnet"

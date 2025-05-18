@@ -1,7 +1,7 @@
 import torch
-from base import BaseModel
 from typing import Any, Dict
 from abc import abstractmethod
+from models.templates.base import BaseModel
 
 
 class BaseClassifier(BaseModel):
@@ -158,3 +158,146 @@ class BaseContrastiveModel(BaseModel):
         base = super().summary()
         base.update({"backbone": self.backbone_name, "projection_dim": self.proj_dim})
         return base
+
+import torch
+from typing import Dict, Any
+from abc import abstractmethod
+from models.templates.base import BaseModel
+
+
+class BaseGAN(BaseModel):
+    """
+    Base class for Generative Adversarial Network models.
+
+    Extends the BaseModel with GAN-specific functionality, including generator and discriminator components.
+
+    Attributes:
+        generator (torch.nn.Module): The generator component of the GAN.
+        discriminator (torch.nn.Module): The discriminator component of the GAN.
+    """
+
+    def __init__(self, model_name: str = "base_gan"):
+        """
+        Initialize the base GAN.
+
+        Args:
+            model_name (str): Name identifier for the model. Defaults to "base_gan".
+        """
+        super(BaseGAN, self).__init__(model_name=model_name, model_type="gan")
+        self.generator = None
+        self.discriminator = None
+
+    @abstractmethod
+    def generate(self, input_data: torch.Tensor) -> torch.Tensor:
+        """
+        Generate data using the generator component.
+
+        Args:
+            input_data (torch.Tensor): Input tensor for the generator.
+
+        Returns:
+            torch.Tensor: Generated output.
+        """
+        pass
+
+    @abstractmethod
+    def discriminate(self, input_data: torch.Tensor) -> torch.Tensor:
+        """
+        Discriminate data using the discriminator component.
+
+        Args:
+            input_data (torch.Tensor): Input tensor for the discriminator.
+
+        Returns:
+            torch.Tensor: Discrimination output (typically probability or score).
+        """
+        pass
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass, typically uses the generator.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Generated output.
+        """
+        return self.generate(x)
+
+    def save_model(self, path: str) -> None:
+        """
+        Save model weights to disk.
+
+        Args:
+            path (str): Path to save the model.
+        """
+        model_state = {
+            "model_name": self.model_name,
+            "model_type": self.model_type,
+            "generator_state_dict": self.generator.state_dict() if self.generator else None,
+            "discriminator_state_dict": self.discriminator.state_dict() if self.discriminator else None,
+        }
+        torch.save(model_state, path)
+        print(f"GAN model saved to {path}")
+
+    def load_model(self, path: str) -> None:
+        """
+        Load model weights from disk.
+
+        Args:
+            path (str): Path to load the model from.
+        """
+        checkpoint = torch.load(path, map_location=self.device)
+        
+        if self.generator and "generator_state_dict" in checkpoint:
+            self.generator.load_state_dict(checkpoint["generator_state_dict"])
+            
+        if self.discriminator and "discriminator_state_dict" in checkpoint:
+            self.discriminator.load_state_dict(checkpoint["discriminator_state_dict"])
+            
+        self.model_name = checkpoint.get("model_name", self.model_name)
+        self.model_type = checkpoint.get("model_type", self.model_type)
+        print(f"GAN model loaded from {path}")
+
+    def summary(self) -> Dict[str, Any]:
+        """
+        Get a summary of the GAN model.
+
+        Returns:
+            Dict[str, Any]: Model summary information.
+        """
+        gen_params = sum(p.numel() for p in self.generator.parameters()) if self.generator else 0
+        gen_trainable = sum(p.numel() for p in self.generator.parameters() if p.requires_grad) if self.generator else 0
+        
+        disc_params = sum(p.numel() for p in self.discriminator.parameters()) if self.discriminator else 0
+        disc_trainable = sum(p.numel() for p in self.discriminator.parameters() if p.requires_grad) if self.discriminator else 0
+        
+        return {
+            "model_name": self.model_name,
+            "model_type": self.model_type,
+            "device": self.device,
+            "generator_parameters": gen_params,
+            "generator_trainable_parameters": gen_trainable,
+            "discriminator_parameters": disc_params,
+            "discriminator_trainable_parameters": disc_trainable,
+            "total_parameters": gen_params + disc_params,
+            "total_trainable_parameters": gen_trainable + disc_trainable,
+        }
+
+    def to_device(self, device: torch.device) -> "BaseGAN":
+        """
+        Move model to specified device.
+
+        Args:
+            device (torch.device): Device to move the model to.
+
+        Returns:
+            BaseGAN: Self reference for method chaining.
+        """
+        self.device = device
+        if self.generator:
+            self.generator.to(device)
+        if self.discriminator:
+            self.discriminator.to(device)
+        return self
