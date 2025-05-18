@@ -4,6 +4,7 @@ sys.path.append(os.path.abspath("../"))  # Add parent directory to Python path
 
 import torch
 from tqdm import tqdm
+from refrakt import models
 from refrakt.registry.model_registry import get_model
 
 class Trainer:

@@ -1,5 +1,5 @@
 import torch.nn as nn
-from registry.model_registry import register_model
+from refrakt.registry.model_registry import register_model
 from models.templates.models import BaseClassifier
 
 

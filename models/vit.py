@@ -1,48 +1,54 @@
-# models/vit.py - Fixed import
+# models/vit.py
 import torch
 import torch.nn as nn
 from typing import Tuple
 from utils.classes import Residual
 from models.templates.models import BaseClassifier
 from utils.methods import positional_embeddings, patchify
-from registry.model_registry import register_model
+from refrakt.registry.model_registry import register_model
 
 @register_model("vit")
 class VisionTransformer(BaseClassifier):
     def __init__(
         self,
-        chw: Tuple[int, int, int] = (3, 224, 224),
-        num_classes: int = 1000,
-        n_patches: int = 16,
-        n_blocks: int = 2,
-        hidden_d: int = 8,
-        n_heads: int = 4,
-        model_name: str = "vit_classifier",
+        image_size=224,
+        patch_size=16,
+        num_classes=1000,
+        dim=768,
+        depth=12,
+        heads=12,
+        in_channels=3,
+        model_name="vit_classifier",
     ):
         super(VisionTransformer, self).__init__(
             num_classes=num_classes, model_name=model_name
         )
-        c, h, w = chw
-        assert h % n_patches == 0 and w % n_patches == 0
-
-        patch_size = (h // n_patches, w // n_patches)
-
-        self.input_d = c * patch_size[0] * patch_size[1]
-        self.linear_mapper = nn.Linear(self.input_d, hidden_d)
-        self.v_class = nn.Parameter(torch.rand(1, hidden_d))
+        
+        # Calculate number of patches
+        assert image_size % patch_size == 0, "Image size must be divisible by patch size"
+        self.n_patches = image_size // patch_size
+        self.patch_size = patch_size
+        self.hidden_d = dim
+        
+        # Calculate input dimension
+        self.input_d = in_channels * patch_size * patch_size
+        
+        # Projection layers
+        self.linear_mapper = nn.Linear(self.input_d, dim)
+        self.v_class = nn.Parameter(torch.rand(1, dim))
         self.register_buffer(
             "positional_embeddings",
-            positional_embeddings(n_patches**2 + 1, hidden_d),
+            positional_embeddings(self.n_patches**2 + 1, dim),
             persistent=False,
         )
 
+        # Transformer blocks
         self.blocks = nn.ModuleList(
-            [Residual(hidden_d, n_heads) for _ in range(n_blocks)]
+            [Residual(dim, heads) for _ in range(depth)]
         )
 
-        self.mlp_head = nn.Sequential(nn.Linear(hidden_d, num_classes))
-        self.n_patches = n_patches
-        self.hidden_d = hidden_d
+        # Classification head
+        self.mlp_head = nn.Sequential(nn.Linear(dim, num_classes))
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         n = images.shape[0]

@@ -4,11 +4,11 @@ Currently going refactoring changes right now. Pointers to tackle:
     1. ~~Implement a base class for models and loss.~~ 
     2. ~~Implement the other classes using the base class.~~
     3. ~~Add docstrings and improve readability.~~
-- [ ] Fix implementation: (2 / 4)
-    1. ~~Switch to vectorized implementations of the model. ~~
+- [X] Fix implementation: (4 / 4)
+    1. ~~Switch to vectorized implementations of the model.~~
     2. ~~Convert SimCLR implementation to follow the base class format.~~
-    3. Fix any bottlenecks and add testing for each model and loss functions. 
-    5. Implement a training and testing pipeline to handle available models.
+    3. ~~Fix any bottlenecks and add testing for each model and loss functions.~~
+    4. ~~Implement a training and testing pipeline to handle available models.~~
 - [ ] Implement: (1 / 4)
     1. ~~SimCLR~~
     2. DINO
