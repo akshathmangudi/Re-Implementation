@@ -12,33 +12,37 @@ from utils.config import SCALE_FACTOR
 from torchvision import transforms
 
 def patchify(images, n_patches):
+    """
+    Vectorized implementation of patchify.
+    Args:
+        images (torch.Tensor): Input images of shape (N, C, H, W).
+        n_patches (int): Number of patches along one dimension.
+    Returns:
+        torch.Tensor: Patches of shape (N, n_patches^2, patch_size^2 * C).
+    """
     n, c, h, w = images.shape
     assert h == w, "Only square images supported"
     patch_size = h // n_patches
-    patches = torch.zeros(n, n_patches**2, h * w * c // n_patches**2)
-
-    for idx, image in enumerate(images):
-        for i in range(n_patches):
-            for j in range(n_patches):
-                patch = image[
-                    :,
-                    i * patch_size : (i + 1) * patch_size,
-                    j * patch_size : (j + 1) * patch_size,
-                ]
-                patches[idx, i * n_patches + j] = patch.flatten()
-    return patches
+    unfold = torch.nn.Unfold(kernel_size=patch_size, stride=patch_size)
+    patches = unfold(images).transpose(1, 2)
+    return patches.reshape(n, n_patches**2, -1)
 
 
 def positional_embeddings(sequence_length, d):
-    result = torch.ones(sequence_length, d)
-    for i in range(sequence_length):
-        for j in range(d):
-            result[i][j] = (
-                np.sin(i / (10000 ** (j / d)))
-                if j % 2 == 0
-                else np.cos(i / (10000 ** (j / d)))
-            )
-    return result
+    """
+    Vectorized implementation of positional embeddings.
+    Args:
+        sequence_length (int): Length of the sequence.
+        d (int): Embedding dimension.
+    Returns:
+        torch.Tensor: Positional embeddings of shape (sequence_length, d).
+    """
+    position = torch.arange(sequence_length).unsqueeze(1)
+    div_term = torch.exp(torch.arange(0, d, 2) * -(np.log(10000.0) / d))
+    embeddings = torch.zeros(sequence_length, d)
+    embeddings[:, 0::2] = torch.sin(position * div_term)
+    embeddings[:, 1::2] = torch.cos(position * div_term)
+    return embeddings
 
 def visualize_reconstructions(model, test_loader, type, device, num_samples=5):
     """

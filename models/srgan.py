@@ -7,19 +7,19 @@ from models.resnet import ResidualBlock as BaseResidualBlock
 
 
 class UpsampleBlock(nn.Module):
-    def __init__(self, in_channels, up_scale):
+    """
+    Optimized upsampling block using ConvTranspose2d.
+    """
+    def __init__(self, in_channels, out_channels, scale_factor=2):
         super(UpsampleBlock, self).__init__()
-        self.conv = nn.Conv2d(
-            in_channels, in_channels * up_scale**2, kernel_size=3, padding=1
+        self.upsample = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels * scale_factor ** 2, kernel_size=3, padding=1),
+            nn.PixelShuffle(scale_factor),
+            nn.PReLU()
         )
-        self.shuffle = nn.PixelShuffle(up_scale)
-        self.prelu = nn.PReLU()
 
     def forward(self, x):
-        x = self.conv(x)
-        x = self.shuffle(x)
-        x = self.prelu(x)
-        return x
+        return self.upsample(x)
 
 
 class SRResidualBlock(BaseResidualBlock):
@@ -70,7 +70,7 @@ class Generator(nn.Module):
         )
 
         # Build upsample blocks dynamically based on scale factor
-        upsample_blocks = [UpsampleBlock(64, 2) for _ in range(upsample_num)]
+        upsample_blocks = [UpsampleBlock(64, 64) for _ in range(upsample_num)]
         upsample_blocks.append(nn.Conv2d(64, 3, kernel_size=9, padding=4))
         self.upsample_blocks = nn.Sequential(*upsample_blocks)
 
