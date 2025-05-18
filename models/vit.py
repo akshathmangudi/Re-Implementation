@@ -7,7 +7,7 @@ from templates.models import BaseClassifier
 from utils.methods import positional_embeddings, patchify
 
 
-class ViTClassifier(BaseClassifier):
+class VisionTransformer(BaseClassifier):
     def __init__(
         self,
         chw: Tuple[int, int, int],
@@ -18,7 +18,7 @@ class ViTClassifier(BaseClassifier):
         n_heads: int = 4,
         model_name: str = "vit_classifier",
     ):
-        super(ViTClassifier, self).__init__(
+        super(VisionTransformer, self).__init__(
             num_classes=num_classes, model_name=model_name
         )
         c, h, w = chw

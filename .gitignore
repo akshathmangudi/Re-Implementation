@@ -164,4 +164,5 @@ data/
 .vscode/
 notebooks/
 Set14/
-dataset.zip
+dataset/
+refrakt_venv/
