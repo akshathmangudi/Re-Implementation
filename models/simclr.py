@@ -19,6 +19,24 @@ class SimCLRModel(BaseContrastiveModel):
             nn.ReLU(),
             nn.Linear(2048, proj_dim, bias=False),
         )
+        
+    def training_step(self, batch, optimizer, loss_fn, device):
+        """Contrastive training step"""
+        x_i, x_j = batch
+        x_i, x_j = x_i.to(device), x_j.to(device)
+        optimizer.zero_grad()
+        z_i, z_j = self(x_i), self(x_j)
+        loss = loss_fn(z_i, z_j)
+        loss.backward()
+        optimizer.step()
+        return {"loss": loss.item()}
+
+    def validation_step(self, batch, loss_fn, device):
+        x_i, x_j = batch
+        x_i, x_j = x_i.to(device), x_j.to(device)
+        z_i, z_j = self(x_i), self(x_j)
+        loss = loss_fn(z_i, z_j)
+        return {"val_loss": loss.item()}
 
     def encode(self, x):
         return self.encoder(x)

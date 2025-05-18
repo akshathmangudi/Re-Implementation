@@ -144,6 +144,27 @@ class SRGAN(BaseGAN):
         self.scale_factor = scale_factor
         self.generator = Generator(scale_factor=scale_factor)
         self.discriminator = Discriminator()
+
+    def training_step(self, batch, optimizer, loss_fn, device):
+        """GAN training step (handles both generator/discriminator)"""
+        real_imgs = batch.to(device)
+        # Update generator
+        optimizer["generator"].zero_grad()
+        z = torch.randn(batch, 100).to(device)
+        fake_imgs = self.generator(z)
+        g_loss = loss_fn["generator"](fake_imgs, real_imgs)
+        g_loss.backward()
+        optimizer["generator"].step()
+
+        # Update discriminator
+        optimizer["discriminator"].zero_grad()
+        real_pred = self.discriminator(real_imgs)
+        fake_pred = self.discriminator(fake_imgs.detach())
+        d_loss = loss_fn["discriminator"](real_pred, fake_pred)
+        d_loss.backward()
+        optimizer["discriminator"].step()
+
+        return {"g_loss": g_loss.item(), "d_loss": d_loss.item()}
     
     def generate(self, input_data):
         """

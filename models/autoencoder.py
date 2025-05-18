@@ -49,6 +49,25 @@ class AutoEncoder(BaseAutoEncoder):
         std = torch.exp(0.5 * sigma)
         eps = torch.randn_like(std)
         return mu + eps * std
+    
+    def training_step(self, batch, optimizer, loss_fn, device):
+        """Custom autoencoder training (reconstruction loss)"""
+        inputs = batch[0].to(device)
+        optimizer.zero_grad()
+        recon = self(inputs)
+        loss = loss_fn(recon, inputs)
+        loss.backward()
+        optimizer.step()
+        return {"loss": loss.item()}
+
+    def validation_step(self, batch, loss_fn, device):
+        """Autoencoder validation (reconstruction loss)"""
+        inputs = batch[0].to(device)
+        recon = self(inputs)
+        loss = loss_fn(recon, inputs)
+        return {"val_loss": loss.item()}
+
+
 
     def forward(self, x):
         if self.type in {"simple", "regularized"}:
