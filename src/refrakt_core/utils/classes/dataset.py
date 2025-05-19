@@ -3,7 +3,7 @@ from PIL import Image
 from pathlib import Path
 from typing import Tuple
 from torch.utils.data import Dataset
-from utils.methods import find_classes
+from refrakt_core.utils.methods import find_classes
 
 
 class CreateDataset(Dataset):

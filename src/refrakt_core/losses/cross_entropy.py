@@ -1,5 +1,5 @@
 import torch.nn as nn
-from losses.templates.base import BaseLoss
+from refrakt_core.losses.templates.base import BaseLoss
 
 class CrossEntropyLoss(BaseLoss):
     """

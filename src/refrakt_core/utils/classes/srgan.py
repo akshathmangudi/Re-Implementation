@@ -1,7 +1,7 @@
 import math
 import torch
 from torch import nn
-from utils.classes.resnet import ResidualBlock
+from refrakt_core.utils.classes.resnet import ResidualBlock
 
 
 class UpsampleBlock(nn.Module):

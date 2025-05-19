@@ -1,7 +1,7 @@
 from torch import nn 
-from utils.classes.attention import MHA
-from utils.classes.resnet import SkipConnections
-from utils.classes.utils import FeedForward, LayerNormalization
+from refrakt_core.utils.classes.attention import MHA
+from refrakt_core.utils.classes.resnet import SkipConnections
+from refrakt_core.utils.classes.utils import FeedForward, LayerNormalization
 
 class DecoderBlock(nn.Module):
     def __init__(

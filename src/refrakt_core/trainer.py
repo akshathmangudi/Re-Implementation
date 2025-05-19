@@ -1,7 +1,7 @@
 import torch
 from tqdm import tqdm
-from registry.model_registry import get_model
-from models.templates.models import BaseGAN
+from refrakt_core.registry.model_registry import get_model
+from refrakt_core.models.templates.models import BaseGAN
 
 class Trainer:
     def __init__(

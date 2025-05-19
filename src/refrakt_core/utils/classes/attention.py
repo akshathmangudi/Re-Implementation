@@ -3,7 +3,7 @@ import torch
 from torch import nn 
 from einops import rearrange
 from torch.nn import functional
-from utils.classes.embedding import RelativeEmbedding
+from refrakt_core.utils.classes.embedding import RelativeEmbedding
 
 class MSA(nn.Module):
     def __init__(self, d, n_heads=4):

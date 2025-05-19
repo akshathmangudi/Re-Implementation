@@ -1,6 +1,6 @@
 import torch.nn as nn
-from registry.model_registry import register_model
-from models.templates.models import BaseClassifier
+from refrakt_core.registry.model_registry import register_model
+from refrakt_core.models.templates.models import BaseClassifier
 
 
 class ConvNeXtBlock(nn.Module):

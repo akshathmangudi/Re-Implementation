@@ -1,7 +1,7 @@
 import torch
-from models.convnext import ConvNeXt
-from models.autoencoder import AutoEncoder
-from models.resnet import ResNet, ResidualBlock
+from refrakt_core.models.convnext import ConvNeXt
+from refrakt_core.models.autoencoder import AutoEncoder
+from refrakt_core.models.resnet import ResNet, ResidualBlock
 
 
 def example_usage():

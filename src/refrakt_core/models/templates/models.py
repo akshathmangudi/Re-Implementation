@@ -1,7 +1,7 @@
 import torch
 from typing import Any, Dict
 from abc import abstractmethod
-from models.templates.base import BaseModel
+from refrakt_core.models.templates.base import BaseModel
 
 
 class BaseClassifier(BaseModel):

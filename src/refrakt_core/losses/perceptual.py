@@ -1,6 +1,6 @@
 import torch.nn as nn
 from torchvision.models import vgg19
-from losses.templates.base import BaseLoss
+from refrakt_core.losses.templates.base import BaseLoss
 
 class PerceptualLoss(BaseLoss):
     """

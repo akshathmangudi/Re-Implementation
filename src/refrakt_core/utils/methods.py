@@ -7,8 +7,8 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 from typing import Tuple, List, Dict
-from utils import config
-from utils.config import SCALE_FACTOR
+from refrakt_core.utils import config
+from refrakt_core.utils.config import SCALE_FACTOR
 from torchvision import transforms
 
 def patchify(images, n_patches):

@@ -1,9 +1,9 @@
 import math
 import torch
 import torch.nn as nn
-from models.templates.models import BaseGAN
-from registry.model_registry import register_model
-from utils.classes.srgan import Generator, Discriminator
+from refrakt_core.models.templates.models import BaseGAN
+from refrakt_core.registry.model_registry import register_model
+from refrakt_core.utils.classes.srgan import Generator, Discriminator
 
 
 @register_model("srgan")

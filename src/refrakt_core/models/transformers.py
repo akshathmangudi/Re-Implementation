@@ -1,10 +1,10 @@
 import math
 import torch
 import torch.nn as nn
-from utils.classes.encoder import Encoder
-from utils.classes.decoder import Decoder
-from utils.classes.transformers import InputEmbeddings, PositionalEncoding
-from utils.classes.utils import Projection
+from refrakt_core.utils.classes.encoder import Encoder
+from refrakt_core.utils.classes.decoder import Decoder
+from refrakt_core.utils.classes.transformers import InputEmbeddings, PositionalEncoding
+from refrakt_core.utils.classes.utils import Projection
 
 
 class Transformer(nn.Module):

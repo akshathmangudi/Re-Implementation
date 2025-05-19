@@ -1,6 +1,6 @@
 import os
 import importlib
-from registry.model_registry import register_model
+from refrakt_core.registry.model_registry import register_model
 
 __all__ = ["register_model"]
 
