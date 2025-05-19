@@ -1,11 +1,8 @@
-# examples/train_swin.py
-
 import os
 import sys
 import torch
 from pathlib import Path
 
-# Add project root to sys.path for clean imports
 project_root = Path(__file__).parent.parent.resolve()
 sys.path.append(str(project_root))
 
@@ -60,7 +57,6 @@ def main():
     )
 
     
-    # Configure optimizer with weight decay for regularization
     trainer.optimizer = trainer.optimizer(
         trainer.model.parameters(), 
         lr=5e-4,

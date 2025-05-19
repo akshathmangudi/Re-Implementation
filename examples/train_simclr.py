@@ -5,7 +5,6 @@ import sys
 import torch
 from pathlib import Path
 
-# Add project root to sys.path for clean imports
 project_root = Path(__file__).parent.parent.resolve()
 sys.path.append(str(project_root))
 
@@ -21,7 +20,6 @@ from utils.classes import ContrastiveDataset
 from losses.ntxent import NTXentLoss
 
 def main():
-    # Define strong augmentations for contrastive learning
     contrastive_transform = transforms.Compose([
         transforms.RandomResizedCrop(32),
         transforms.RandomHorizontalFlip(p=0.5),
@@ -36,7 +34,6 @@ def main():
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
     ])
 
-    # Load CIFAR-10 dataset
     train_dataset = datasets.CIFAR10(
         root='./data',
         train=True,
@@ -51,7 +48,6 @@ def main():
         transform=None
     )
     
-    # Wrap datasets for contrastive learning
     contrastive_train_dataset = ContrastiveDataset(train_dataset, contrastive_transform)
     contrastive_test_dataset = ContrastiveDataset(test_dataset, contrastive_transform)
 

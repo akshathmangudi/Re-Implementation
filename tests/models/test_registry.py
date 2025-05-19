@@ -9,7 +9,10 @@ class TestModelRegistry:
         expected_models = [
             "autoencoder",
             "convnext",
-            "resnet",
+            "resnet18",
+            "resnet50",
+            "resnet101",
+            "resnet152",
             "simclr",
             "srgan",
             "swin",
@@ -44,7 +47,7 @@ class TestModelRegistry:
     
     def test_get_model_with_args(self):
         """Test getting a model with arguments."""
-        model = get_model("resnet", block=ResidualBlock, layers=[1, 1, 1, 1], num_classes=20)
+        model = get_model("resnet18", num_classes=20)
         assert model.num_classes == 20
         
         # Test AutoEncoder with custom dimensions

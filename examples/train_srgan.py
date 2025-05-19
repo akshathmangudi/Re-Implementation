@@ -40,7 +40,7 @@ def main():
     
     train_loader, val_loader = get_srgan_dataloaders(data_root="./data/DIV2K")
     
-    model_args = dict(  # for generator
+    model_args = dict(
         scale_factor=4,
     )
     model = get_model("srgan", **model_args).to(device)

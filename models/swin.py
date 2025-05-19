@@ -1,7 +1,9 @@
 import torch.nn as nn
 import torch
 from registry.model_registry import register_model
-from utils.classes import Embedding, Merge, AlternateSwin
+from utils.classes.embedding import Embedding
+from utils.classes.swin import AlternateSwin
+from utils.classes.utils import Merge
 
 @register_model("swin")
 class SwinTransformer(nn.Module):

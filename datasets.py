@@ -4,7 +4,6 @@ from pathlib import Path
 import torchvision.transforms as T
 from torch.utils.data import Dataset
 
-
 class ContrastiveDataset(Dataset):
     def __init__(self, base_dataset, transform):
         self.base_dataset = base_dataset
@@ -16,7 +15,7 @@ class ContrastiveDataset(Dataset):
         
     def __len__(self):
         return len(self.base_dataset)
-    
+
 
 class SuperResolutionDataset(Dataset):
     def __init__(self, lr_dir, hr_dir, transform=None):

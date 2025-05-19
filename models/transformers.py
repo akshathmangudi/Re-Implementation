@@ -1,13 +1,11 @@
 import math
 import torch
 import torch.nn as nn
-from utils.classes import (
-    Encoder,
-    Decoder,
-    InputEmbeddings,
-    PositionalEncoding,
-    Projection,
-)
+from utils.classes.encoder import Encoder
+from utils.classes.decoder import Decoder
+from utils.classes.transformers import InputEmbeddings, PositionalEncoding
+from utils.classes.utils import Projection
+
 
 class Transformer(nn.Module):
     def __init__(
