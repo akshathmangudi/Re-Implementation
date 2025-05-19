@@ -1,7 +1,7 @@
 from torchvision import models
 import torch.nn as nn
 import torch.nn.functional as F
-from refrakt.registry.model_registry import register_model
+from registry.model_registry import register_model
 from models.templates.models import BaseContrastiveModel
 
 @register_model("simclr")

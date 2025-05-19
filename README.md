@@ -14,6 +14,7 @@ Currently going refactoring changes right now. Pointers to tackle:
     2. DINO
     3. Masked Autoencoder
     4. MSN
+    5. LNN
 - [ ] Convert the project into a library. 
 
 Current re-implementations are:
@@ -31,6 +32,7 @@ Current re-implementations are:
 | [Emerging Properties in Self-Supervised Vision Transformers](https://arxiv.org/abs/2104.14294) | Formulation |
 | [Masked Autoencoders Are Scalable Vision Learners](https://arxiv.org/abs/2111.06377) | Formulation |
 | [Masked Siamese Networks for Label-Efficient Learning](https://arxiv.org/abs/2204.07141) | Formulation |
+| [Lagrangian Neural Networks](https://arxiv.org/abs/2003.04630) | Formulation |
 
 ## Contributions:
 

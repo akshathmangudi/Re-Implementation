@@ -9,7 +9,6 @@ from torch.nn import functional
 from utils.methods import find_classes
 from torch.utils.data import Dataset
 
-
 class MSA(nn.Module):
     def __init__(self, d, n_heads=4):
         super(MSA, self).__init__()
@@ -202,7 +201,7 @@ class EncoderBlock(nn.Module):
         self.dropout = nn.Dropout(dropout)
         self.skip_conn = nn.ModuleList([SkipConnections(dropout) for _ in range(2)])
 
-    def forward(sel, x, src_mask):
+    def forward(self, x, src_mask):
         x = self.skip_conn[0](x, lambda x: self.self_att(x, x, x, src_mask))
         x = self.skip_conn[1](x, self.feed_forw)
         return x
@@ -289,8 +288,6 @@ class Merge(nn.Module):
         x = self.linear(x)
         x = self.norm(x)
         return x
-
-
 class ShiftedWindowMSA(nn.Module):
     def __init__(self, embed_dim, n_heads, window_size, mask=False):
         super().__init__()
@@ -301,61 +298,65 @@ class ShiftedWindowMSA(nn.Module):
         self.proj1 = nn.Linear(embed_dim, 3 * embed_dim)
         self.proj2 = nn.Linear(embed_dim, embed_dim)
         self.embeddings = RelativeEmbedding()
-
+    
     def forward(self, x):
+        # Get the device from input tensor
+        device = x.device
+        
         h_dim = self.embed_dim / self.n_heads
         height = width = int(math.sqrt(x.shape[1]))
+        
         x = self.proj1(x)
         x = rearrange(x, "b (h w) (c K) -> b h w c K", K=3, h=height, w=width)
-
+        
         if self.mask:
             x = torch.roll(
                 x, (-self.window_size // 2, -self.window_size // 2), dims=(1, 2)
             )
-
+            
         x = rearrange(
-            x,
-            "b (h m1) (w m2) (H E) K -> b H h w (m1 m2) E K",
-            H=self.n_heads,
-            m1=self.window_size,
-            m2=self.window_size,
+            x, "b (h m1) (w m2) (H E) K -> b H h w (m1 m2) E K",
+            H=self.n_heads, m1=self.window_size, m2=self.window_size,
         )
-
+        
         Q, K, V = x.chunk(3, dim=6)
         Q, K, V = Q.squeeze(-1), K.squeeze(-1), V.squeeze(-1)
+        
         att_scores = (Q @ K.transpose(4, 5)) / math.sqrt(h_dim)
         att_scores = self.embeddings(att_scores)
-
+        
         if self.mask:
-            row_mask = torch.zeros((self.window_size**2, self.window_size**2)).cuda()
+            # Create masks on the appropriate device
+            row_mask = torch.zeros((self.window_size**2, self.window_size**2), device=device)
             row_mask[
-                -self.window_size * (self.window_size // 2) :,
-                0 : -self.window_size * (self.window_size // 2),
+                -self.window_size * (self.window_size // 2):, 
+                0:-self.window_size * (self.window_size // 2),
             ] = float("-inf")
             row_mask[
-                0 : -self.window_size * (self.window_size // 2),
-                -self.window_size * (self.window_size // 2) :,
+                0:-self.window_size * (self.window_size // 2), 
+                -self.window_size * (self.window_size // 2):,
             ] = float("-inf")
+            
             column_mask = rearrange(
-                row_mask,
-                "(r w1) (c w2) -> (w1 r) (w2 c)",
-                w1=self.window_size,
-                w2=self.window_size,
-            ).cuda()
+                row_mask, "(r w1) (c w2) -> (w1 r) (w2 c)",
+                w1=self.window_size, w2=self.window_size,
+            )
+            
             att_scores[:, :, -1, :] += row_mask
             att_scores[:, :, :, -1] += column_mask
-
+        
         att = functional.softmax(att_scores, dim=-1) @ V
+        
         x = rearrange(
-            att,
-            "b H h w (m1 m2) E -> b (h m1) (w m2) (H E)",
-            m1=self.window_size,
-            m2=self.window_size,
+            att, "b H h w (m1 m2) E -> b (h m1) (w m2) (H E)",
+            m1=self.window_size, m2=self.window_size,
         )
-
+        
         if self.mask:
             x = torch.roll(x, (self.window_size // 2, self.window_size // 2), (1, 2))
+            
         x = rearrange(x, "b h w c -> b (h w) c")
+        
         return self.proj2(x)
 
 
@@ -438,3 +439,8 @@ class CreateDataset(Dataset):
         else:
             return image, class_idx
 
+
+class FlattenTransform:
+    def __call__(self, x):
+        return torch.flatten(x)
+    

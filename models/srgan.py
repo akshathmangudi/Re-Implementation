@@ -2,7 +2,7 @@ import math
 import torch
 import torch.nn as nn
 from models.templates.models import BaseGAN
-from refrakt.registry.model_registry import register_model
+from registry.model_registry import register_model
 from models.resnet import ResidualBlock as BaseResidualBlock
 
 
@@ -146,25 +146,34 @@ class SRGAN(BaseGAN):
         self.discriminator = Discriminator()
 
     def training_step(self, batch, optimizer, loss_fn, device):
-        """GAN training step (handles both generator/discriminator)"""
-        real_imgs = batch.to(device)
-        # Update generator
+        lr = batch["lr"].to(device)
+        hr = batch["hr"].to(device)
+
+        # Generator update
         optimizer["generator"].zero_grad()
-        z = torch.randn(batch, 100).to(device)
-        fake_imgs = self.generator(z)
-        g_loss = loss_fn["generator"](fake_imgs, real_imgs)
+        sr = self.generator(lr)
+        g_loss = loss_fn["generator"](sr, hr)
         g_loss.backward()
         optimizer["generator"].step()
 
-        # Update discriminator
+        # Discriminator update
         optimizer["discriminator"].zero_grad()
-        real_pred = self.discriminator(real_imgs)
-        fake_pred = self.discriminator(fake_imgs.detach())
-        d_loss = loss_fn["discriminator"](real_pred, fake_pred)
+        real_pred = self.discriminator(hr)
+        fake_pred = self.discriminator(sr.detach())
+
+        loss_real = loss_fn["discriminator"](real_pred, target_is_real=True)
+        loss_fake = loss_fn["discriminator"](fake_pred, target_is_real=False)
+        d_loss = 0.5 * (loss_real + loss_fake)
+
         d_loss.backward()
         optimizer["discriminator"].step()
 
-        return {"g_loss": g_loss.item(), "d_loss": d_loss.item()}
+        return {
+            "g_loss": g_loss.item(),
+            "d_loss": d_loss.item()
+        }
+
+
     
     def generate(self, input_data):
         """

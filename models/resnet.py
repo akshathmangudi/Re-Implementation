@@ -1,5 +1,5 @@
 import torch.nn as nn
-from refrakt.registry.model_registry import register_model
+from registry.model_registry import register_model
 from models.templates.models import BaseClassifier
 
 
@@ -31,7 +31,6 @@ class ResidualBlock(nn.Module):
         out = self.relu(out)
         return out
 
-@register_model("resnet")
 class ResNet(BaseClassifier):
     def __init__(
         self, block, layers, in_channels=3, num_classes=10, model_name="resnet"
@@ -78,3 +77,79 @@ class ResNet(BaseClassifier):
         x = self.fc(x)
 
         return x
+
+class BottleneckBlock(nn.Module):
+    expansion = 4
+
+    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
+        super(BottleneckBlock, self).__init__()
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(),
+        )
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=stride, padding=1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(),
+        )
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(out_channels, out_channels * self.expansion, kernel_size=1, stride=1),
+            nn.BatchNorm2d(out_channels * self.expansion),
+        )
+        self.downsample = downsample
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        residual = x
+        out = self.conv1(x)
+        out = self.conv2(out)
+        out = self.conv3(out)
+        
+        if self.downsample:
+            residual = self.downsample(x)
+            
+        out += residual
+        out = self.relu(out)
+        return out
+
+@register_model("resnet18")
+class ResNet18(ResNet):
+    def __init__(self, in_channels=3, num_classes=10):
+        super().__init__(
+            block=ResidualBlock,
+            layers=[2, 2, 2, 2],
+            in_channels=in_channels,
+            num_classes=num_classes
+        )
+
+
+@register_model("resnet50")
+class ResNet50(ResNet):
+    def __init__(self, in_channels=3, num_classes=10):
+        super().__init__(
+            block=BottleneckBlock, 
+            layers=[3, 4, 6, 3],
+            in_channels=in_channels,
+            num_classes=num_classes
+        )
+
+@register_model("resnet101")
+class ResNet101(ResNet):
+    def __init__(self, in_channels=3, num_classes=10):
+        super().__init__(
+            block=BottleneckBlock,
+            layers=[3, 4, 23, 3],
+            in_channels=in_channels,
+            num_classes=num_classes
+        )
+
+@register_model("resnet152")
+class ResNet152(ResNet):
+    def __init__(self, in_channels=3, num_classes=10):
+        super().__init__(
+            block=BottleneckBlock,
+            layers=[3, 8, 36, 3],
+            in_channels=in_channels,
+            num_classes=num_classes
+        )

@@ -5,7 +5,7 @@ from typing import Tuple
 from utils.classes import Residual
 from models.templates.models import BaseClassifier
 from utils.methods import positional_embeddings, patchify
-from refrakt.registry.model_registry import register_model
+from registry.model_registry import register_model
 
 @register_model("vit")
 class VisionTransformer(BaseClassifier):

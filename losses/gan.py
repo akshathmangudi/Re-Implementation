@@ -11,7 +11,7 @@ class GANLoss(BaseLoss):
         super().__init__(name="GANLoss")
         self.loss = nn.MSELoss() if use_lsgan else nn.BCEWithLogitsLoss()
         self.use_lsgan = use_lsgan
-        self.device = device
+        self.device = torch.device(device)
 
     def forward(self, pred, target_is_real):
         """
@@ -26,9 +26,11 @@ class GANLoss(BaseLoss):
             raise TypeError("target_is_real must be a boolean.")
         if not isinstance(pred, torch.Tensor):
             raise TypeError("pred must be a torch.Tensor.")
-        target = torch.ones_like(pred) if target_is_real else torch.zeros_like(pred)
-        return self.loss(pred, target)
 
+        target = torch.ones_like(pred) if target_is_real else torch.zeros_like(pred)
+        target = target.to(pred.device)  # Ensure target is on the same device as pred
+
+        return self.loss(pred, target)
 
     def get_config(self):
         """
@@ -39,5 +41,5 @@ class GANLoss(BaseLoss):
         return {
             **super().get_config(),
             "use_lsgan": self.use_lsgan,
-            "device": self.device,
+            "device": str(self.device),
         }

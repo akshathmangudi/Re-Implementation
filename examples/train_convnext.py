@@ -1,4 +1,6 @@
-# examples/train_vit.py
+# examples/train_convnext.py
+
+import os
 import sys
 import torch
 from pathlib import Path
@@ -39,15 +41,10 @@ def main():
     val_loader = DataLoader(test_dataset, batch_size=128)
 
     trainer = Trainer(
-        model_name="vit",
+        model_name="convnext",
         model_args=dict(
-            image_size=28,
-            patch_size=4,
-            num_classes=10,
-            dim=64,
-            depth=6,
-            heads=4,
             in_channels=1,
+            num_classes=10
         ),
         train_loader=train_loader,
         val_loader=val_loader,
