@@ -162,7 +162,7 @@ class BaseContrastiveModel(BaseModel):
 import torch
 from typing import Dict, Any
 from abc import abstractmethod
-from models.templates.base import BaseModel
+from refrakt_core.models.templates.base import BaseModel
 
 
 class BaseGAN(BaseModel):
