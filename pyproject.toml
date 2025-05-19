@@ -25,8 +25,8 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/yourusername/refrakt-core"
-"Bug Tracker" = "https://github.com/yourusername/refrakt-core/issues"
+"Homepage" = "https://github.com/refrakt-hub/refrakt_core"
+"Bug Tracker" = "https://github.com/yourusername/refrakt_core/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]

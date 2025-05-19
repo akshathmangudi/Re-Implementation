@@ -1,7 +1,6 @@
 import pytest
 import torch
-from registry.model_registry import MODEL_REGISTRY, register_model, get_model
-from models.resnet import ResidualBlock
+from refrakt_core.registry.model_registry import MODEL_REGISTRY, register_model, get_model
 
 class TestModelRegistry:
     def test_registry_contains_models(self):

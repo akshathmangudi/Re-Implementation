@@ -1,7 +1,7 @@
 import pytest
 import torch
 import torch.nn.functional as F
-from losses.ntxent import NTXentLoss
+from refrakt_core.losses.ntxent import NTXentLoss
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 from PIL import Image
 import torchvision.transforms as T
-from losses.perceptual import PerceptualLoss 
+from refrakt_core.losses.perceptual import PerceptualLoss
 
 
 @pytest.fixture(scope="module")

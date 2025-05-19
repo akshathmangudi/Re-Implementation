@@ -1,6 +1,6 @@
 import pytest
 import torch
-from models.resnet import ResNet, ResidualBlock
+from refrakt_core.models.resnet import ResNet, ResidualBlock
 
 class TestResNet:
     @pytest.fixture

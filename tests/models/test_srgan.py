@@ -1,6 +1,6 @@
 import torch
 import tempfile
-from models.srgan import SRGAN
+from refrakt_core.models.srgan import SRGAN
 
 
 def test_generator_output_shape():
