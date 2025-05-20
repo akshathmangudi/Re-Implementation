@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+*.ipynb
+tests/
+.env
+*.log
+*.github/workflows/
+.vscode/
+data/
+dist/
+venv/
+.pypirc
+.gitignore
