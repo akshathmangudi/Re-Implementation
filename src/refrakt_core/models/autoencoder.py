@@ -51,21 +51,42 @@ class AutoEncoder(BaseAutoEncoder):
         return mu + eps * std
     
     def training_step(self, batch, optimizer, loss_fn, device):
-        """Custom autoencoder training (reconstruction loss)"""
         inputs = batch[0].to(device)
         optimizer.zero_grad()
-        recon = self(inputs)
-        loss = loss_fn(recon, inputs)
+
+        output = self(inputs)
+        
+        if self.type == "vae":
+            recon, mu, sigma = output
+            # Use custom VAE loss (MSE + KL divergence)
+            mse = loss_fn(recon, inputs)
+            kl = -0.5 * torch.mean(1 + sigma - mu.pow(2) - sigma.exp())
+            loss = mse + kl
+        else:
+            recon = output
+            loss = loss_fn(recon, inputs)
+
         loss.backward()
         optimizer.step()
+
         return {"loss": loss.item()}
 
+
     def validation_step(self, batch, loss_fn, device):
-        """Autoencoder validation (reconstruction loss)"""
         inputs = batch[0].to(device)
-        recon = self(inputs)
-        loss = loss_fn(recon, inputs)
+        output = self(inputs)
+
+        if self.type == "vae":
+            recon, mu, sigma = output
+            mse = loss_fn(recon, inputs)
+            kl = -0.5 * torch.mean(1 + sigma - mu.pow(2) - sigma.exp())
+            loss = mse + kl
+        else:
+            recon = output
+            loss = loss_fn(recon, inputs)
+
         return {"val_loss": loss.item()}
+
 
 
 

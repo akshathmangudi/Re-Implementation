@@ -1,32 +1,34 @@
+import os
 import sys
 import torch
 from pathlib import Path
 
 project_root = Path(__file__).parent.parent.resolve()
-sys.path.append(str(project_root))
+sys.path.append(str(project_root / "src"))
 
 from torch import nn, optim
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
-from trainer import Trainer
-import models
+from refrakt_core.trainer.supervised import SupervisedTrainer
+from refrakt_core.registry.model_registry import get_model
+import refrakt_core.models 
 
 def main():
     transform = transforms.Compose([
-        transforms.Resize((28, 28)),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])
 
-    train_dataset = datasets.MNIST(
+    train_dataset = datasets.CIFAR10(
         root='./data',
         train=True,
         download=True,
         transform=transform
     )
 
-    test_dataset = datasets.MNIST(
+    test_dataset = datasets.CIFAR10(
         root='./data',
         train=False,
         download=True,
@@ -36,25 +38,21 @@ def main():
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)
     val_loader = DataLoader(test_dataset, batch_size=128)
 
-    trainer = Trainer(
-        model_name="vit",
-        model_args=dict(
-            image_size=28,
-            patch_size=4,
-            num_classes=10,
-            dim=64,
-            depth=6,
-            heads=4,
-            in_channels=1,
-        ),
+    model = get_model(
+        "vit",
+        in_channels=3,
+        num_classes=10
+    )
+
+    trainer = SupervisedTrainer(
+        model=model,
         train_loader=train_loader,
         val_loader=val_loader,
         loss_fn=nn.CrossEntropyLoss(),
-        optimizer=optim.AdamW,
+        optimizer_cls=optim.AdamW,
+        optimizer_args={"lr": 3e-4},
         device="cuda" if torch.cuda.is_available() else "cpu"
     )
-
-    trainer.optimizer = trainer.optimizer(trainer.model.parameters(), lr=1e-3)
 
     trainer.train(num_epochs=1)
     trainer.evaluate()

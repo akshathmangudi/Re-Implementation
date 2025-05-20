@@ -32,9 +32,3 @@ class CreateDataset(Dataset):
             return self.transform(image), class_idx
         else:
             return image, class_idx
-
-
-class FlattenTransform:
-    def __call__(self, x):
-        return torch.flatten(x)
-    

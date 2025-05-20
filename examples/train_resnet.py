@@ -1,59 +1,60 @@
-import sys
 import os
+import sys
+import torch
 from pathlib import Path
 
 project_root = Path(__file__).parent.parent.resolve()
-sys.path.append(str(project_root))
-import models
+sys.path.append(str(project_root / "src"))
 
-import torch
 from torch import nn, optim
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
-from trainer import Trainer
+from refrakt_core.trainer.supervised import SupervisedTrainer
+from refrakt_core.registry.model_registry import get_model
+import refrakt_core.models 
 
 def main():
-    # Data transforms
     transform = transforms.Compose([
-        transforms.Resize(224),
+        transforms.Resize((28, 28)),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                             std=[0.229, 0.224, 0.225])
+        transforms.Normalize((0.1307,), (0.3081,))
     ])
 
-    train_dataset = datasets.CIFAR10(
-        root='./data', 
-        train=True, 
-        download=True, 
+    train_dataset = datasets.MNIST(
+        root='./data',
+        train=True,
+        download=True,
         transform=transform
     )
-    test_dataset = datasets.CIFAR10(
+
+    test_dataset = datasets.MNIST(
         root='./data',
         train=False,
         download=True,
         transform=transform
     )
 
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    val_loader = DataLoader(test_dataset, batch_size=64)
+    train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)
+    val_loader = DataLoader(test_dataset, batch_size=128)
 
-    trainer = Trainer(
-        model_name="resnet18",
-        model_args={
-            "in_channels": 3,
-            "num_classes": 10
-        },
+    model = get_model(
+        "resnet18",
+        in_channels=1,
+        num_classes=10
+    )
+
+    trainer = SupervisedTrainer(
+        model=model,
         train_loader=train_loader,
         val_loader=val_loader,
         loss_fn=nn.CrossEntropyLoss(),
-        optimizer=optim.Adam,
+        optimizer_cls=optim.AdamW,
+        optimizer_args={"lr": 3e-4},
         device="cuda" if torch.cuda.is_available() else "cpu"
     )
 
-    trainer.optimizer = trainer.optimizer(trainer.model.parameters(), lr=1e-3)
-
-    trainer.train(num_epochs=10)
+    trainer.train(num_epochs=1)
     trainer.evaluate()
 
 if __name__ == "__main__":

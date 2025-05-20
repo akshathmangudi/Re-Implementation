@@ -62,6 +62,7 @@ class BaseAutoEncoder(BaseModel):
             model_name=model_name, model_type="autoencoder"
         )
         self.hidden_dim = hidden_dim
+        self.model_name = model_name
 
     @abstractmethod
     def encode(self, x: torch.Tensor) -> torch.Tensor:

@@ -1,3 +1,4 @@
+import torch
 import random
 import torchvision.transforms as T
 
@@ -23,3 +24,9 @@ class PairedTransform:
         lr = T.ToTensor()(lr)
 
         return lr, hr
+
+
+class FlattenTransform:
+    def __call__(self, x):
+        return torch.flatten(x)
+    
