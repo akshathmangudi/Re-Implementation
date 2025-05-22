@@ -37,8 +37,8 @@ class GANTrainer(BaseTrainer):
     def evaluate(self):
         self.model.eval()
         with torch.no_grad():
-            for batch in self.val_loader:
-                lr, _ = batch
-                lr = lr.to(self.device)
+            for batch in tqdm(self.val_loader, desc="Evaluating", leave=False):
+                lr = batch["lr"].to(self.device)  # Get tensor from batch dict
+                hr = batch["hr"].to(self.device)  # Optional, if needed for metrics
                 sr = self.model.generate(lr)
-                # Optional: compute PSNR, SSIM, or save generated images
+
