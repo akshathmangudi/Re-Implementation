@@ -43,8 +43,28 @@ class SupervisedTrainer(BaseTrainer):
 
     def evaluate(self):
         self.model.eval()
+        correct = 0
+        total = 0
         with torch.no_grad():
-            for batch in self.val_loader:
-                batch = {k: v.to(self.device) for k, v in batch.items()}
-                preds = self.model(batch["input"])
-                # TODO: Add metric computations here
+            loop = tqdm(self.val_loader, desc="Validating", leave=False)
+            for batch in loop:
+                if isinstance(batch, (tuple, list)):
+                    inputs, targets = batch
+                elif isinstance(batch, dict):
+                    inputs, targets = batch["input"], batch["target"]
+                else:
+                    raise TypeError("Unsupported batch format")
+
+                inputs, targets = inputs.to(self.device), targets.to(self.device)
+                outputs = self.model(inputs)
+
+                preds = torch.argmax(outputs, dim=1)
+                correct += (preds == targets).sum().item()
+                total += targets.size(0)
+
+                loop.set_postfix({
+                    "acc": f"{(correct / total * 100):.2f}%" if total > 0 else "0.00%"
+                })
+
+        accuracy = correct / total if total > 0 else 0
+        print(f"\nValidation Accuracy: {accuracy * 100:.2f}%")
