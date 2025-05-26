@@ -196,3 +196,65 @@ def find_classes(directory: str) -> Tuple[List[str], Dict[str, int]]:
 
     class_to_idx = {class_name: i for i, class_name in enumerate(classes)}
     return classes, class_to_idx
+
+def get_2d_sincos_pos_embed(embed_dim, grid_size, cls_token=False):
+    """
+    Generate 2D sine-cosine positional embeddings.
+    """
+    grid_h = np.arange(grid_size, dtype=np.float32)
+    grid_w = np.arange(grid_size, dtype=np.float32)
+    grid = np.meshgrid(grid_w, grid_h)
+    grid = np.stack(grid, axis=0)  # [2, grid_size, grid_size]
+    grid = grid.reshape([2, 1, grid_size, grid_size])
+    pos_embed = get_2d_sincos_pos_embed_from_grid(embed_dim, grid)
+    if cls_token:
+        cls_pos = np.zeros([1, embed_dim])
+        pos_embed = np.concatenate([cls_pos, pos_embed], axis=0)
+    return torch.tensor(pos_embed, dtype=torch.float32)
+
+def get_2d_sincos_pos_embed_from_grid(embed_dim, grid):
+    assert embed_dim % 2 == 0
+    emb_h = get_1d_sincos_pos_embed(embed_dim // 2, grid[0])
+    emb_w = get_1d_sincos_pos_embed(embed_dim // 2, grid[1])
+    return np.concatenate([emb_h, emb_w], axis=1)
+
+def get_1d_sincos_pos_embed(embed_dim, pos):
+    omega = np.arange(embed_dim // 2, dtype=np.float32)
+    omega /= embed_dim / 2.
+    omega = 1. / (10000**omega)
+
+    pos = pos.reshape(-1)
+    out = np.outer(pos, omega)
+
+    emb_sin = np.sin(out)
+    emb_cos = np.cos(out)
+    return np.concatenate([emb_sin, emb_cos], axis=1)
+
+def random_masking(x, mask_ratio):
+    """
+    Perform per-sample random masking.
+    Args:
+        x: [B, N, C]
+        mask_ratio: float
+    Returns:
+        x_masked: [B, N_masked, C]
+        mask: [B, N]
+        ids_restore: [B, N]
+        ids_keep: [B, N_visible]
+    """
+    B, N, _ = x.shape
+    len_keep = int(N * (1 - mask_ratio))
+
+    noise = torch.rand(B, N, device=x.device)
+    ids_shuffle = torch.argsort(noise, dim=1)
+    ids_restore = torch.argsort(ids_shuffle, dim=1)
+
+    ids_keep = ids_shuffle[:, :len_keep]
+    x_masked = torch.gather(x, dim=1, index=ids_keep.unsqueeze(-1).expand(-1, -1, x.shape[2]))
+
+    mask = torch.ones([B, N], device=x.device)
+    mask[:, :len_keep] = 0
+    mask = torch.gather(mask, dim=1, index=ids_restore)
+
+    return x_masked, mask, ids_restore, ids_keep
+

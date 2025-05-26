@@ -1,6 +1,7 @@
 import torch
 import random
 import torchvision.transforms as T
+from torchvision.transforms import functional as TF
 
 
 class PairedTransform:
@@ -30,3 +31,14 @@ class FlattenTransform:
     def __call__(self, x):
         return torch.flatten(x)
     
+
+class PatchifyTransform:
+    def __init__(self, patch_size):
+        self.patch_size = patch_size
+
+    def __call__(self, img):
+        # img: Tensor shape [C, H, W]
+        c, h, w = img.shape
+        p = self.patch_size
+        assert h % p == 0 and w % p == 0, "Image dims must be divisible by patch size"
+        return img  # patchify is handled in model internally

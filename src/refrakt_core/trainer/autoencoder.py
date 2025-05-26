@@ -1,3 +1,5 @@
+# trainer/ae.py
+
 from tqdm import tqdm
 import torch
 from refrakt_core.trainer.base import BaseTrainer
@@ -15,35 +17,54 @@ class AETrainer(BaseTrainer):
     ):
         super().__init__(model, train_loader, val_loader, device)
         self.loss_fn = loss_fn
+
         if optimizer_args is None:
             optimizer_args = {"lr": 1e-3}
+
         self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
 
     def train(self, num_epochs):
         for epoch in range(num_epochs):
             self.model.train()
             loop = tqdm(self.train_loader, desc=f"Epoch {epoch+1}/{num_epochs}")
+
             for batch in loop:
-                metrics = self.model.training_step(
-                    batch=batch,
-                    optimizer=self.optimizer,
-                    loss_fn=self.loss_fn,
-                    device=self.device
-                )
-                loop.set_postfix(metrics)
+                # === Robust batch handling ===
+                if isinstance(batch, (list, tuple)):
+                    inputs = batch[0]
+                elif isinstance(batch, dict):
+                    inputs = batch["image"]
+                else:
+                    inputs = batch
+
+                inputs = inputs.to(self.device)
+
+                self.optimizer.zero_grad()
+                outputs = self.model(inputs)
+                loss = self._compute_loss(outputs, inputs)
+                loss.backward()
+                self.optimizer.step()
+
+                loop.set_postfix({"loss": loss.item()})
 
     def evaluate(self):
         self.model.eval()
-        val_loss = 0
+        total_loss = 0.0
+
         with torch.no_grad():
             for batch in self.val_loader:
-                metrics = self.model.validation_step(
-                    batch=batch,
-                    loss_fn=self.loss_fn,
-                    device=self.device
-                )
-                val_loss += metrics["val_loss"]
+                if isinstance(batch, (list, tuple)):
+                    inputs = batch[0]
+                elif isinstance(batch, dict):
+                    inputs = batch["image"]
+                else:
+                    inputs = batch
 
-        avg_val_loss = val_loss / len(self.val_loader)
+                inputs = inputs.to(self.device)
+                outputs = self.model(inputs)
+                loss = self._compute_loss(outputs, inputs)
+                total_loss += loss.item()
+
+        avg_val_loss = total_loss / len(self.val_loader)
         print(f"Validation Loss: {avg_val_loss:.4f}")
         return avg_val_loss
