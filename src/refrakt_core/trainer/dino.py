@@ -66,7 +66,8 @@ class DINOTrainer(BaseTrainer):
         with torch.no_grad():
             for batch in loop:
                 try:
-                    views = [v.to(self.device.type) for v in batch]
+                    # ✅ FIX 3: Fixed device assignment (was .type instead of the device itself)
+                    views = [v.to(self.device) for v in batch]
                     student_out = torch.stack(
                         [self.model(view, teacher=False) for view in views], dim=1
                     )
