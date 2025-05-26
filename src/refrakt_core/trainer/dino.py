@@ -15,7 +15,7 @@ class DINOTrainer(BaseTrainer):
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.scheduler = scheduler
-        self.scaler = GradScaler(device_type=self.device)  # ✅ Use GradScaler for mixed precision
+        self.scaler = GradScaler(device=self.device)  # ✅ Use GradScaler for mixed precision
 
     def train(self, num_epochs):
         for epoch in range(num_epochs):
