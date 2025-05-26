@@ -258,3 +258,35 @@ def random_masking(x, mask_ratio):
 
     return x_masked, mask, ids_restore, ids_keep
 
+# src/refrakt_core/utils/augment.py
+
+import torch
+
+def random_patch_masking(x, mask_ratio=0.6, patch_size=16):
+    """
+    Apply random masking to image patches.
+
+    Args:
+        x: (B, C, H, W)
+        mask_ratio: fraction of patches to mask
+        patch_size: patch size of ViT (e.g., 16)
+
+    Returns:
+        masked_x: image with masked patches set to 0
+    """
+    B, C, H, W = x.shape
+    assert H % patch_size == 0 and W % patch_size == 0, "Image dims must be divisible by patch size"
+
+    num_patches = (H // patch_size) * (W // patch_size)
+    num_mask = int(mask_ratio * num_patches)
+
+    x_masked = x.clone()
+    for i in range(B):
+        patch_indices = torch.randperm(num_patches)[:num_mask]
+        mask = torch.ones(num_patches, device=x.device)
+        mask[patch_indices] = 0
+        mask = mask.view(H // patch_size, W // patch_size)
+        mask = mask.repeat_interleave(patch_size, dim=0).repeat_interleave(patch_size, dim=1)
+        x_masked[i] *= mask.unsqueeze(0)
+
+    return x_masked
