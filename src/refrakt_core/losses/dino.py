@@ -30,8 +30,9 @@ class DINOLoss(BaseLoss):
             torch.Tensor: Scalar loss value
         """
         # Ensure inputs are float and on the same device
-        student_output = student_output.float()
-        teacher_output = teacher_output.float().detach()
+        device = student_output.device
+        student_output = student_output.float().to(device)
+        teacher_output = teacher_output.float().detach().to(device)
 
         # Get batch size and number of views
         n_views = student_output.shape[1]

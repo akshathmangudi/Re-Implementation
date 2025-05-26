@@ -61,7 +61,6 @@ class DINOTrainer(BaseTrainer):
         self.model.eval()
         total_loss = 0.0
 
-        # ✅ Add tqdm progress bar for validation
         loop = tqdm(self.val_loader, desc="Evaluating", leave=True)
 
         with torch.no_grad():

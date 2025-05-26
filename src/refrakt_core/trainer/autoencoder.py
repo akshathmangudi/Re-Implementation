@@ -52,7 +52,8 @@ class AETrainer(BaseTrainer):
         total_loss = 0.0
 
         with torch.no_grad():
-            for batch in self.val_loader:
+            loop = tqdm(self.val_loader, desc="Validating", leave=False)
+            for batch in loop::
                 if isinstance(batch, (list, tuple)):
                     inputs = batch[0]
                 elif isinstance(batch, dict):
