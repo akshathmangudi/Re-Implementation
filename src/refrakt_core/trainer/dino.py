@@ -15,7 +15,7 @@ class DINOTrainer(BaseTrainer):
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.scheduler = scheduler
-        self.scaler = GradScaler()
+        self.scaler = GradScaler(device_type=self.device)  # ✅ Use GradScaler for mixed precision
 
     def train(self, num_epochs):
         for epoch in range(num_epochs):
@@ -28,7 +28,7 @@ class DINOTrainer(BaseTrainer):
             for batch in loop:
                 try:
                     views = [v.to(self.device) for v in batch]  # list of multi-views
-                    with autocast():
+                    with autocast(device_type=self.device):
                         student_out = torch.stack(
                             [self.model(view, teacher=False) for view in views], dim=1
                         )  # (B, num_views, out_dim)
