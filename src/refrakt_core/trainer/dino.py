@@ -29,7 +29,7 @@ class DINOTrainer(BaseTrainer):
 
             for batch in loop:
                 try:
-                    views = [v.to(self.device.type) for v in batch]  # list of multi-views
+                    views = [v.to(self.device) for v in batch]  # list of multi-views
                     with autocast(device_type=self.device.type):
                         student_out = torch.stack(
                             [self.model(view, teacher=False) for view in views], dim=1
