@@ -1,5 +1,6 @@
 import torch
-from torch.cuda.amp import GradScaler, autocast
+from torch import autocast
+from torch.amp import GradScaler
 from refrakt_core.trainer.base import BaseTrainer
 import torch.nn.functional as F
 from tqdm import tqdm  # ✅ Add tqdm for progress bars
