@@ -41,7 +41,7 @@ class AETrainer(BaseTrainer):
 
                 self.optimizer.zero_grad()
                 outputs = self.model(inputs)
-                loss = self._compute_loss(outputs, inputs)
+                loss = self.loss_fn(outputs, inputs)
                 loss.backward()
                 self.optimizer.step()
 
@@ -62,7 +62,7 @@ class AETrainer(BaseTrainer):
 
                 inputs = inputs.to(self.device)
                 outputs = self.model(inputs)
-                loss = self._compute_loss(outputs, inputs)
+                loss = self.loss_fn(outputs, inputs)
                 total_loss += loss.item()
 
         avg_val_loss = total_loss / len(self.val_loader)
