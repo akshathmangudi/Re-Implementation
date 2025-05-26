@@ -20,7 +20,10 @@ class ResNet(BaseClassifier):
         self.layer2 = self._make_layer(block, 256, layers[2], stride=2)
         self.layer3 = self._make_layer(block, 512, layers[3], stride=2)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512, num_classes)
+        self.feature_dim = 512  # Required by DINOModel
+        self.projection = nn.Identity()  # Default identity unless overridden
+        self.fc = nn.Linear(self.feature_dim, num_classes)
+
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
@@ -36,7 +39,7 @@ class ResNet(BaseClassifier):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x, return_features=False):
         x = self.conv1(x)
         x = self.maxpool(x)
         x = self.layer0(x)
@@ -46,8 +49,11 @@ class ResNet(BaseClassifier):
 
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
-        x = self.fc(x)
+        
+        if return_features:
+            return x
 
+        x = self.fc(x)
         return x
 
 @register_model("resnet18")
