@@ -27,41 +27,41 @@ class AETrainer(BaseTrainer):
         self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
 
     def train(self, num_epochs):
-    for epoch in range(num_epochs):
-        self.model.train()
-        loop = tqdm(self.train_loader, desc=f"Epoch {epoch+1}/{num_epochs}")
+        for epoch in range(num_epochs):
+            self.model.train()
+            loop = tqdm(self.train_loader, desc=f"Epoch {epoch+1}/{num_epochs}")
 
-        for batch in loop:
-            if isinstance(batch, (list, tuple)):
-                inputs = batch[0]
-            elif isinstance(batch, dict):
-                inputs = batch["image"]
-            else:
-                inputs = batch
+            for batch in loop:
+                if isinstance(batch, (list, tuple)):
+                    inputs = batch[0]
+                elif isinstance(batch, dict):
+                    inputs = batch["image"]
+                else:
+                    inputs = batch
 
-            inputs = inputs.to(self.device)
+                inputs = inputs.to(self.device)
 
-            self.optimizer.zero_grad()
-            raw_outputs = self.model(inputs)
+                self.optimizer.zero_grad()
+                raw_outputs = self.model(inputs)
 
-            # === Handle structured outputs for custom loss functions ===
-            if isinstance(raw_outputs, dict):
-                loss = self.loss_fn(raw_outputs)
-            elif isinstance(raw_outputs, tuple) and len(raw_outputs) == 3:
-                recon, mask, original = raw_outputs
-                structured_output = {
-                    "recon_patches": recon,
-                    "mask": mask,
-                    "original_patches": original
-                }
-                loss = self.loss_fn(structured_output)
-            else:
-                loss = self.loss_fn(raw_outputs, inputs)
+                # === Handle structured outputs for custom loss functions ===
+                if isinstance(raw_outputs, dict):
+                    loss = self.loss_fn(raw_outputs)
+                elif isinstance(raw_outputs, tuple) and len(raw_outputs) == 3:
+                    recon, mask, original = raw_outputs
+                    structured_output = {
+                        "recon_patches": recon,
+                        "mask": mask,
+                        "original_patches": original
+                    }
+                    loss = self.loss_fn(structured_output)
+                else:
+                    loss = self.loss_fn(raw_outputs, inputs)
 
-            loss.backward()
-            self.optimizer.step()
+                loss.backward()
+                self.optimizer.step()
 
-            loop.set_postfix({"loss": loss.item()})
+                loop.set_postfix({"loss": loss.item()})
 
 
     def evaluate(self):
