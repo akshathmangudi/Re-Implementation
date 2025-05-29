@@ -15,7 +15,7 @@ def get_trainer(name, *args, **kwargs):
     global _imported
     if not _imported:
         # Trigger import of trainers
-        import refrakt_core.trainers
+        import refrakt_core.trainer
         _imported = True
     if name not in TRAINER_REGISTRY:
         raise ValueError(f"Trainer '{name}' not found. Available: {list(TRAINER_REGISTRY.keys())}")

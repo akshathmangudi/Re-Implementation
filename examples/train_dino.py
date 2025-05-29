@@ -16,21 +16,8 @@ from refrakt_core.datasets import ContrastiveDataset
 from refrakt_core.losses.dino import DINOLoss
 from refrakt_core.registry.model_registry import get_model
 import refrakt_core.models  # triggers model registration
-
-def debug_batch(batch, device):
-    """Debug function to check tensor devices in batch"""
-    print(f"Batch type: {type(batch)}")
-    if isinstance(batch, (list, tuple)):
-        print(f"Number of items in batch: {len(batch)}")
-        for i, item in enumerate(batch):
-            if isinstance(item, torch.Tensor):
-                print(f"  Item {i}: {item.shape}, device: {item.device}, dtype: {item.dtype}")
-            else:
-                print(f"  Item {i}: {type(item)}")
-    elif isinstance(batch, torch.Tensor):
-        print(f"Single tensor: {batch.shape}, device: {batch.device}, dtype: {batch.dtype}")
-    else:
-        print(f"Unknown batch type: {type(batch)}")
+import refrakt_core.trainer  # triggers trainer registration
+import refrakt_core.losses  # triggers loss registration
 
 def main():
     # Define standard DINO augmentations

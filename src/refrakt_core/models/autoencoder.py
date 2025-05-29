@@ -86,10 +86,7 @@ class AutoEncoder(BaseAutoEncoder):
             loss = loss_fn(recon, inputs)
 
         return {"val_loss": loss.item()}
-
-
-
-
+    
     def forward(self, x):
         if self.type in {"simple", "regularized"}:
             encoded = self.encode(x)
