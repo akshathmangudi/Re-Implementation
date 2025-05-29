@@ -19,6 +19,6 @@ def get_trainer(name, *args, **kwargs):
         _imported = True
     if name not in TRAINER_REGISTRY:
         raise ValueError(f"Trainer '{name}' not found. Available: {list(TRAINER_REGISTRY.keys())}")
-    return TRAINER_REGISTRY[name](*args, **kwargs)
+    return TRAINER_REGISTRY[name]  # <-- Just return the class, let caller instanti
 
 print("TRAINER_REGISTRY ID:", id(TRAINER_REGISTRY))
