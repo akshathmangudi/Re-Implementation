@@ -9,7 +9,7 @@ def register_trainer(name):
     return decorator
 
 
-def get_trainer(name, *args, **kwargs):
+def get_trainer(name):
     global _imported
     if not _imported:
         # Trigger import of trainers
@@ -17,6 +17,6 @@ def get_trainer(name, *args, **kwargs):
         _imported = True
     if name not in TRAINER_REGISTRY:
         raise ValueError(f"Trainer '{name}' not found. Available: {list(TRAINER_REGISTRY.keys())}")
-    return TRAINER_REGISTRY[name](*args, **kwargs)
+    return TRAINER_REGISTRY[name]  # Return the class, not an instance
 
 print("TRAINER_REGISTRY ID:", id(TRAINER_REGISTRY))

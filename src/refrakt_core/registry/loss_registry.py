@@ -19,6 +19,8 @@ def get_loss(name, *args, **kwargs):
         _imported = True
     if name not in LOSS_REGISTRY:
         raise ValueError(f"Loss '{name}' not found. Available: {list(LOSS_REGISTRY.keys())}")
+    # You can choose to keep this as is (instantiate immediately)
+    # or change to: return LOSS_REGISTRY[name] for consistency
     return LOSS_REGISTRY[name](*args, **kwargs)
 
 print("LOSS_REGISTRY ID:", id(LOSS_REGISTRY))
