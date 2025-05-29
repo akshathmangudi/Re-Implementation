@@ -1,13 +1,17 @@
 import torch
-import torch.nn as nn
+from refrakt_core.registry.loss_registry import register_loss
+from refrakt_core.losses.base_loss import BaseLoss  # adjust import path if needed
 
-class MAELoss(nn.Module):
+@register_loss("mae")
+class MAELoss(BaseLoss):
     """
-    Custom loss for MAE that computes MSE over masked patches only.
-    Optionally supports per-patch normalization (as described in the MAE paper).
+    Masked Autoencoder Loss.
+    Computes MSE only over masked patches.
+    Supports optional normalization over patches (MAE paper).
     """
+
     def __init__(self, normalize_target=False):
-        super().__init__()
+        super().__init__(name="MAELoss")
         self.normalize_target = normalize_target
 
     def forward(self, predictions, targets=None):
@@ -17,20 +21,28 @@ class MAELoss(nn.Module):
                 - recon_patches: (B, N, patch_dim)
                 - mask: (B, N)
                 - original_patches: (B, N, patch_dim)
-            targets (unused): Provided for API consistency, should be None.
+            targets (unused): For compatibility; ignored.
         Returns:
             torch.Tensor: scalar masked reconstruction loss
         """
-        pred = predictions["recon_patches"]          # (B, N, patch_dim)
-        mask = predictions["mask"].unsqueeze(-1)     # (B, N, 1)
-        original = predictions["original_patches"]   # (B, N, patch_dim)
+        pred = predictions["recon_patches"]
+        mask = predictions["mask"].unsqueeze(-1)
+        original = predictions["original_patches"]
 
         if self.normalize_target:
             mean = original.mean(dim=-1, keepdim=True)
             std = original.std(dim=-1, keepdim=True) + 1e-6
             original = (original - mean) / std
 
-        loss = (pred - original) ** 2
-        loss = (loss * mask).sum() / mask.sum()
+        loss = ((pred - original) ** 2) * mask
+        return loss.sum() / mask.sum()
 
-        return loss
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "normalize_target": self.normalize_target
+        })
+        return config
+
+    def extra_repr(self):
+        return f"name={self.name}, normalize_target={self.normalize_target}"

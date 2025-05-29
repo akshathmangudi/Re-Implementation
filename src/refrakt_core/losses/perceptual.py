@@ -1,7 +1,9 @@
 import torch.nn as nn
 from torchvision.models import vgg19
 from refrakt_core.losses.templates.base import BaseLoss
+from refrakt_core.registry.loss_registry import register_loss
 
+@register_loss("perceptual")
 class PerceptualLoss(BaseLoss):
     """
     Perceptual Loss using a pre-trained VGG19 network.

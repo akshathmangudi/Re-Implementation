@@ -16,6 +16,9 @@ from refrakt_core.losses.msn import MSNLoss
 from refrakt_core.registry.model_registry import get_model
 import refrakt_core.models  # Needed to trigger @register_model decorators
 
+import refrakt_core.trainer
+import refrakt_core.losses
+
 def main():
     transform = transforms.Compose([
         transforms.Resize((224, 224)),

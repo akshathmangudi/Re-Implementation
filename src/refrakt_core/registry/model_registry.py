@@ -14,8 +14,8 @@ def register_model(name):
 def get_model(name, *args, **kwargs):
     global _imported
     if not _imported:
-        # Lazy-load models on first use
-        import refrakt_core.models  # this will trigger auto_import_models()
+        # Trigger import of models
+        import refrakt_core.models
         _imported = True
     if name not in MODEL_REGISTRY:
         raise ValueError(f"Model '{name}' not found. Available: {list(MODEL_REGISTRY.keys())}")

@@ -13,6 +13,8 @@ from torch.utils.data import DataLoader
 from refrakt_core.trainer.supervised import SupervisedTrainer
 from refrakt_core.registry.model_registry import get_model
 import refrakt_core.models 
+import refrakt_core.trainer
+import refrakt_core.losses
 
 def main():
     transform = transforms.Compose([

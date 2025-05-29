@@ -13,6 +13,10 @@ from refrakt_core.registry.model_registry import get_model
 from refrakt_core.losses.mae import MAELoss
 from refrakt_core.transforms import PatchifyTransform
 
+import refrakt_core.models
+import refrakt_core.trainer
+import refrakt_core.losses
+
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

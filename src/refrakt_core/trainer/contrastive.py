@@ -1,7 +1,9 @@
 from tqdm import tqdm
 import torch
 from refrakt_core.trainer.base import BaseTrainer
+from refrakt_core.registry.trainer_registry import register_trainer
 
+@register_trainer("contrastive")
 class ContrastiveTrainer(BaseTrainer):
     def __init__(
         self,

@@ -4,8 +4,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from refrakt_core.losses.templates.base import BaseLoss
+from refrakt_core.registry.loss_registry import register_loss
 
-
+@register_loss("msn")
 class MSNLoss(BaseLoss):
     def __init__(self, temp_anchor=0.1, temp_target=0.04, lambda_me_max=1.0):
         super().__init__()

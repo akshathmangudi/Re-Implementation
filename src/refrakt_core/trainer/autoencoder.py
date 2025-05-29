@@ -3,7 +3,10 @@
 from tqdm import tqdm
 import torch
 from refrakt_core.trainer.base import BaseTrainer
+from refrakt_core.registry.trainer_registry import register_trainer
 
+
+@register_trainer("autoencoder")
 class AETrainer(BaseTrainer):
     def __init__(
         self,

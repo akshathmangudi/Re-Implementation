@@ -3,9 +3,10 @@ from torch import autocast
 from torch.amp import GradScaler
 from refrakt_core.trainer.base import BaseTrainer
 import torch.nn.functional as F
-from tqdm import tqdm  # ✅ Add tqdm for progress bars
+from tqdm import tqdm
+from refrakt_core.registry.trainer_registry import register_trainer
 
-
+@register_trainer("dino")
 class DINOTrainer(BaseTrainer):
     """
     Trainer for DINO framework with mixed precision and teacher momentum updates.

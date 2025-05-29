@@ -17,6 +17,21 @@ from refrakt_core.losses.dino import DINOLoss
 from refrakt_core.registry.model_registry import get_model
 import refrakt_core.models  # triggers model registration
 
+def debug_batch(batch, device):
+    """Debug function to check tensor devices in batch"""
+    print(f"Batch type: {type(batch)}")
+    if isinstance(batch, (list, tuple)):
+        print(f"Number of items in batch: {len(batch)}")
+        for i, item in enumerate(batch):
+            if isinstance(item, torch.Tensor):
+                print(f"  Item {i}: {item.shape}, device: {item.device}, dtype: {item.dtype}")
+            else:
+                print(f"  Item {i}: {type(item)}")
+    elif isinstance(batch, torch.Tensor):
+        print(f"Single tensor: {batch.shape}, device: {batch.device}, dtype: {batch.dtype}")
+    else:
+        print(f"Unknown batch type: {type(batch)}")
+
 def main():
     # Define standard DINO augmentations
     dino_transform = transforms.Compose([
@@ -39,6 +54,12 @@ def main():
     train_loader = DataLoader(contrastive_train_dataset, batch_size=128, shuffle=True, drop_last=True, num_workers=4)
     val_loader = DataLoader(contrastive_test_dataset, batch_size=128, shuffle=False, num_workers=4)
 
+    # Debug: Check a single batch
+    print("=== DEBUGGING BATCH ===")
+    for batch in train_loader:
+        debug_batch(batch, "cuda")
+        break
+
     # Instantiate the DINO model
     try:
         model = get_model("dino", backbone="resnet18", out_dim=65536)
@@ -47,14 +68,52 @@ def main():
         return
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"Using device: {device}")
     
-    # ✅ FIX 1: Move model to device
+    # Move model to device
     model = model.to(device)
+    print(f"Model device: {next(model.parameters()).device}")
 
     # Instantiate DINO-specific loss
     loss_fn = DINOLoss(out_dim=65536, teacher_temp=0.04, student_temp=0.1, center_momentum=0.9)
-    
     loss_fn = loss_fn.to(device)
+    print(f"Loss center device: {loss_fn.center.device}")
+
+    # Debug: Test a single forward pass
+    print("=== TESTING FORWARD PASS ===")
+    model.eval()
+    with torch.no_grad():
+        for batch in train_loader:
+            try:
+                print("Raw batch:")
+                debug_batch(batch, device)
+                
+                # Try to move to device
+                if isinstance(batch, (list, tuple)):
+                    views = [v.to(device) if isinstance(v, torch.Tensor) else v for v in batch]
+                else:
+                    views = [batch.to(device)]
+                
+                print("After moving to device:")
+                for i, view in enumerate(views):
+                    if isinstance(view, torch.Tensor):
+                        print(f"  View {i}: {view.shape}, device: {view.device}")
+                
+                # Test forward pass
+                if len(views) > 0 and isinstance(views[0], torch.Tensor):
+                    print("Testing model forward pass...")
+                    student_out = model(views[0], teacher=False)
+                    teacher_out = model(views[0], teacher=True)
+                    print(f"Student out: {student_out.shape}, device: {student_out.device}")
+                    print(f"Teacher out: {teacher_out.shape}, device: {teacher_out.device}")
+                    print("Forward pass successful!")
+                
+                break
+            except Exception as e:
+                print(f"Error in forward pass: {e}")
+                import traceback
+                traceback.print_exc()
+                break
 
     # Optimizer and optional scheduler
     optimizer = optim.Adam(model.parameters(), lr=3e-4)
@@ -73,10 +132,13 @@ def main():
 
     # Train + evaluate
     try:
+        print("=== STARTING TRAINING ===")
         trainer.train(num_epochs=1)
         trainer.evaluate()
     except Exception as e:
         print(f"[ERROR] Training or evaluation failed: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
-    main()
+    main()  

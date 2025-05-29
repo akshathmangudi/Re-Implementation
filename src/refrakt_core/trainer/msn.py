@@ -5,8 +5,9 @@ from tqdm import tqdm
 from torch.nn.utils import clip_grad_norm_
 from refrakt_core.trainer.base import BaseTrainer
 from refrakt_core.utils.methods import random_patch_masking
+from refrakt_core.registry.trainer_registry import register_trainer
 
-
+@register_trainer("msn")
 class MSNTrainer(BaseTrainer):
     def __init__(
         self, model, train_loader, loss_fn, optimizer_cls, optimizer_args,

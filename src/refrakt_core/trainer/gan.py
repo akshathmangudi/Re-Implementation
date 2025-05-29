@@ -1,7 +1,9 @@
 from tqdm import tqdm
 import torch
 from refrakt_core.trainer.base import BaseTrainer  # Adjust path accordingly
+from refrakt_core.registry.trainer_registry import register_trainer
 
+@register_trainer("gan")
 class GANTrainer(BaseTrainer):
     def __init__(
         self,

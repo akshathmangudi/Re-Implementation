@@ -13,6 +13,9 @@ from torch.utils.data import DataLoader
 from refrakt_core.trainer.autoencoder import AETrainer
 from refrakt_core.registry.model_registry import get_model
 from refrakt_core.transforms import FlattenTransform
+import refrakt_core.models  # Ensure models are registered
+import refrakt_core.trainer  # Ensure trainer is registered
+import refrakt_core.losses  # Ensure losses are registered
 
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
