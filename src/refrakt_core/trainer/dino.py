@@ -18,14 +18,13 @@ class DINOTrainer(BaseTrainer):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.device = torch.device(device)
-        self.scaler = GradScaler(self.device.type)  # ✅ Use GradScaler for mixed precision
+        self.scaler = GradScaler(self.device.type)
 
     def train(self, num_epochs):
         for epoch in range(num_epochs):
             self.model.train()
             total_loss = 0.0
 
-            # ✅ Add tqdm progress bar for training
             loop = tqdm(self.train_loader, desc=f"Epoch {epoch+1}/{num_epochs}", leave=True)
 
             for batch in loop:
@@ -35,7 +34,7 @@ class DINOTrainer(BaseTrainer):
                         student_out = torch.stack(
                             [self.model(view, teacher=False) for view in views], dim=1
                         )  # (B, num_views, out_dim)
-                        teacher_out = self.model(views[0], teacher=True).unsqueeze(1)  # (B, 1, out_dim)
+                        teacher_out = self.model(views[0], teacher=True).unsqueeze(1)
                         loss = self.loss_fn(student_out, teacher_out)
 
                     self.optimizer.zero_grad()
@@ -46,7 +45,6 @@ class DINOTrainer(BaseTrainer):
                     self.model.update_teacher()
                     total_loss += loss.item()
 
-                    # ✅ Update tqdm with current loss
                     loop.set_postfix(loss=loss.item())
                 except Exception as e:
                     loop.write(f"[ERROR] Batch skipped due to error: {e}")
@@ -67,7 +65,6 @@ class DINOTrainer(BaseTrainer):
         with torch.no_grad():
             for batch in loop:
                 try:
-                    # ✅ FIX 3: Fixed device assignment (was .type instead of the device itself)
                     views = [v.to(self.device) for v in batch]
                     student_out = torch.stack(
                         [self.model(view, teacher=False) for view in views], dim=1
