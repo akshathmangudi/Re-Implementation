@@ -1,0 +1,39 @@
+dataset:
+  name: "MNIST"
+  root: "./data"
+  train: true
+  download: true
+  transform: "mnist_flatten"  # Registered transform pipeline name
+
+dataloader:
+  batch_size: 64
+  shuffle: true
+  num_workers: 4
+  drop_last: false
+
+model:
+  name: "autoencoder"
+  backbone: "linear"  # Optional, just to satisfy schema
+  out_dim: 784
+  extra:
+    input_dim: 784
+    hidden_dim: 32
+    type: "vae"
+
+loss:
+  name: "mse"
+  params: {}
+
+optimizer:
+  name: "adam"
+  lr: 0.001
+  weight_decay: 0.0
+
+scheduler:
+  name: null
+  params: null
+
+trainer:
+  name: "ae"
+  num_epochs: 10
+  device: "cuda"

@@ -57,5 +57,5 @@ scheduler:
 trainer:
   name: dino
   params:
-    num_epochs: 100
+    num_epochs: 1
     device: cuda

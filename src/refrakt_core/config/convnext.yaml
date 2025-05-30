@@ -1,0 +1,46 @@
+dataset:
+  name: MNIST
+  params:
+    root: ./data
+    train: true
+    download: true
+  transform:
+    mode: single
+    views:
+      -   # Single view for supervised classification
+          - name: Resize
+            params: { size: [28, 28] }
+          - name: ToTensor
+          - name: Normalize
+            params:
+              mean: [0.1307]
+              std: [0.3081]
+
+dataloader:
+  batch_size: 128
+  shuffle: true
+  num_workers: 4
+  drop_last: false
+
+model:
+  name: convnext
+  params:
+    in_channels: 1
+    num_classes: 10
+
+loss:
+  name: cross_entropy
+  params: {}
+
+optimizer:
+  name: adamw
+  params:
+    lr: 0.0003
+
+scheduler: null  # Optional, can be added later
+
+trainer:
+  name: supervised
+  params:
+    num_epochs: 1
+    device: cuda

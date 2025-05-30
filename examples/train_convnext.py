@@ -52,7 +52,7 @@ def main():
         val_loader=val_loader,
         loss_fn=nn.CrossEntropyLoss(),
         optimizer_cls=optim.AdamW,
-        optimizer_args={"lr": 3e-4},
+        optimizer_awrgs={"lr": 3e-4},
         device="cuda" if torch.cuda.is_available() else "cpu"
     )
 
