@@ -11,12 +11,34 @@ WRAPPER_REGISTRY = {
 }
 
 def build_transform(transform_cfg):
+    """Build transform pipeline from config, handling nested transforms properly."""
     transform_list = []
+    
     for t in transform_cfg:
         name = t["name"]
         params = t.get("params", {})
-        t_cls = getattr(transforms, name)
-        transform_list.append(t_cls(**params))
+        
+        # Handle special case for RandomApply which has nested transforms
+        if name == "RandomApply":
+            # Extract the nested transforms
+            nested_transforms = params.get("transforms", [])
+            # Build the nested transform list
+            nested_transform_list = []
+            for nested_t in nested_transforms:
+                nested_name = nested_t["name"]
+                nested_params = nested_t.get("params", {})
+                nested_t_cls = getattr(transforms, nested_name)
+                nested_transform_list.append(nested_t_cls(**nested_params))
+            
+            # Create RandomApply with the built nested transforms
+            p = params.get("p", 0.5)  # default probability
+            t_cls = getattr(transforms, name)
+            transform_list.append(t_cls(nested_transform_list, p=p))
+        else:
+            # Handle regular transforms
+            t_cls = getattr(transforms, name)
+            transform_list.append(t_cls(**params))
+    
     return transforms.Compose(transform_list)
 
 
