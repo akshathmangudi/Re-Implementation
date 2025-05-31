@@ -13,18 +13,24 @@ class SupervisedTrainer(BaseTrainer):
         loss_fn,
         optimizer_cls,
         optimizer_args=None,
-        device="cuda"
+        device="cuda",
+        scheduler=None,  # Add optional scheduler parameter
+        **kwargs  # Capture additional arguments for future compatibility
     ):
         super().__init__(model, train_loader, val_loader, device)
         self.loss_fn = loss_fn
         if optimizer_args is None:
             optimizer_args = {"lr": 1e-4}
+        
         self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
+        self.scheduler = scheduler  # Store scheduler if provided
+        self.extra_params = kwargs  # Store additional parameters
 
     def train(self, num_epochs):
         for epoch in range(num_epochs):
             self.model.train()
             loop = tqdm(self.train_loader, desc=f"Epoch {epoch+1}/{num_epochs}")
+            
             for batch in loop:
                 if isinstance(batch, (tuple, list)):
                     inputs, targets = batch
@@ -41,6 +47,12 @@ class SupervisedTrainer(BaseTrainer):
                 loss.backward()
                 self.optimizer.step()
                 loop.set_postfix({"loss": loss.item()})
+            
+            # Step scheduler at the end of each epoch if available
+            if self.scheduler:
+                self.scheduler.step()
+                current_lr = self.optimizer.param_groups[0]['lr']
+                print(f"Epoch {epoch+1} complete. Learning rate: {current_lr:.6f}")
 
 
     def evaluate(self):

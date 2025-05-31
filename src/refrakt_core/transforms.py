@@ -2,8 +2,9 @@ import torch
 import random
 import torchvision.transforms as T
 from torchvision.transforms import functional as TF
+from refrakt_core.registry.transform_registry import register_transform
 
-
+@register_transform("paired")
 class PairedTransform:
     # For super-resolution datasets
     def __init__(self, crop_size=96):
@@ -26,12 +27,12 @@ class PairedTransform:
 
         return lr, hr
 
-
+@register_transform("flatten")
 class FlattenTransform:
     def __call__(self, x):
         return torch.flatten(x)
     
-
+@register_transform("patchify")
 class PatchifyTransform:
     def __init__(self, patch_size):
         self.patch_size = patch_size

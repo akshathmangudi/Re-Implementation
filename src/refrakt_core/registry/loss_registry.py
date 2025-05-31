@@ -14,13 +14,25 @@ def register_loss(name):
 def get_loss(name, *args, **kwargs):
     global _imported
     if not _imported:
-        # auto-import losses
+        # Auto-import custom losses
         import refrakt_core.losses
         _imported = True
+        
+        # Add standard PyTorch losses to registry
+        import torch.nn as nn
+        standard_losses = {
+            'mse': nn.MSELoss,
+            'l1': nn.L1Loss,
+            'bce': nn.BCELoss,
+        }
+        
+        for loss_name, loss_class in standard_losses.items():
+            if loss_name not in LOSS_REGISTRY:
+                register_loss(loss_name)(loss_class)
+
     if name not in LOSS_REGISTRY:
         raise ValueError(f"Loss '{name}' not found. Available: {list(LOSS_REGISTRY.keys())}")
-    # You can choose to keep this as is (instantiate immediately)
-    # or change to: return LOSS_REGISTRY[name] for consistency
+    
     return LOSS_REGISTRY[name](*args, **kwargs)
 
 print("LOSS_REGISTRY ID:", id(LOSS_REGISTRY))

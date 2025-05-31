@@ -1,56 +1,42 @@
 from pydantic import BaseModel, Field
-from typing import Literal, Optional, List, Union, Dict
+from typing import Literal, Optional, List, Union, Dict, Any
 
-# Dataset block
 class DatasetConfig(BaseModel):
     name: str
-    root: str
-    train: bool = True
-    download: bool = True
-    transform: Optional[str] = None  # Points to a registered transform
+    params: Dict[str, Any] = Field(default_factory=dict)
+    wrapper: Optional[str] = None
+    transform: Optional[Union[str, List]] = None
 
-# DataLoader block
 class DataLoaderConfig(BaseModel):
-    batch_size: int
-    shuffle: bool
-    num_workers: int
-    drop_last: bool = False
+    params: Dict[str, Any] = Field(default_factory=dict)
 
-# Model block
 class ModelConfig(BaseModel):
-    name: str  # e.g. "dino"
-    backbone: str
-    out_dim: Optional[int] = None
-    extra: Dict[str, Union[str, float, int, bool]] = {}  # for model-specific keys
+    name: str
+    params: Dict[str, Any] = Field(default_factory=dict)
 
-# Loss block
 class LossConfig(BaseModel):
-    name: str  # e.g. "dino"
-    params: Dict[str, Union[float, int, bool]]  # e.g. teacher_temp, center_momentum
+    name: Optional[str] = None
+    params: Dict[str, Any] = Field(default_factory=dict)
+    components: Optional[Dict[str, Dict[str, Any]]] = None
 
-# Optimizer block
 class OptimizerConfig(BaseModel):
-    name: Literal["adam", "sgd", "adamw"]
-    lr: float
-    weight_decay: Optional[float] = None
+    name: Optional[str] = None
+    params: Dict[str, Any] = Field(default_factory=dict)
+    components: Optional[Dict[str, Dict[str, Any]]] = None
 
-# Scheduler block
 class SchedulerConfig(BaseModel):
-    name: Optional[str] = None  # e.g. cosine
-    params: Optional[Dict[str, Union[float, int]]] = None
+    name: Optional[str] = None
+    params: Optional[Dict[str, Any]] = None
 
-# Trainer block
 class TrainerConfig(BaseModel):
-    name: str  # e.g. "dino"
-    num_epochs: int
-    device: Literal["cuda", "cpu"] = "cuda"
+    name: str
+    params: Dict[str, Any] = Field(default_factory=dict)
 
-# Root config
 class RefraktConfig(BaseModel):
     dataset: DatasetConfig
     dataloader: DataLoaderConfig
     model: ModelConfig
     loss: LossConfig
     optimizer: OptimizerConfig
-    scheduler: Optional[SchedulerConfig]
+    scheduler: Optional[SchedulerConfig] = None
     trainer: TrainerConfig

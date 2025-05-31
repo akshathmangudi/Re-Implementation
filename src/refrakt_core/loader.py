@@ -1,78 +1,98 @@
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-from refrakt_core.datasets import ContrastiveDataset
-from omegaconf import DictConfig
+from refrakt_core.datasets import ContrastiveDataset, SuperResolutionDataset
+from omegaconf import DictConfig, ListConfig, OmegaConf
 import torch.nn as nn
+from refrakt_core.registry.transform_registry import get_transform
+from omegaconf import ListConfig
+from refrakt_core.registry.dataset_registry import get_dataset
+from refrakt_core.registry.dataset_registry import DATASET_REGISTRY  # Add this import
+import refrakt_core.datasets
+import refrakt_core.transforms
 
-# Register any wrappers here
-WRAPPER_REGISTRY = {
-    "contrastive": ContrastiveDataset,
-    None: lambda ds, **kwargs: ds
-}
 
-def build_transform(transform_cfg):
-    """Build transform pipeline from config, handling nested transforms properly."""
+def build_transform(cfg):
+    """Build transform pipeline from config using transform registry"""
     transform_list = []
     
-    for t in transform_cfg:
+    # Handle different transform configuration styles
+    if isinstance(cfg, (list, ListConfig)):
+        transform_sequence = cfg
+    elif isinstance(cfg, dict) and "views" in cfg:
+        transform_sequence = cfg["views"][0]
+    else:
+        raise ValueError(f"Unsupported transform configuration: {type(cfg)}")
+    
+    for t in transform_sequence:
         name = t["name"]
         params = t.get("params", {})
         
-        # Handle special case for RandomApply which has nested transforms
+        # Special handling for transforms with nested transforms
         if name == "RandomApply":
-            # Extract the nested transforms
-            nested_transforms = params.get("transforms", [])
-            # Build the nested transform list
-            nested_transform_list = []
-            for nested_t in nested_transforms:
-                nested_name = nested_t["name"]
-                nested_params = nested_t.get("params", {})
-                nested_t_cls = getattr(transforms, nested_name)
-                nested_transform_list.append(nested_t_cls(**nested_params))
-            
-            # Create RandomApply with the built nested transforms
-            p = params.get("p", 0.5)  # default probability
-            t_cls = getattr(transforms, name)
-            transform_list.append(t_cls(nested_transform_list, p=p))
+            # Recursively build nested transforms
+            nested_transforms_cfg = params.get("transforms", [])
+            nested_transforms = build_transform(nested_transforms_cfg).transforms
+            transform_list.append(get_transform(
+                "RandomApply", 
+                transforms=nested_transforms,
+                p=params.get("p", 0.5)
+            ))
         else:
-            # Handle regular transforms
-            t_cls = getattr(transforms, name)
-            transform_list.append(t_cls(**params))
+            # Handle all other transforms through the registry
+            transform = get_transform(name, **params)
+            
+            # Remove the problematic flatten check since it's not needed
+            transform_list.append(transform)
     
-    return transforms.Compose(transform_list)
-
+    # Special handling for paired transforms
+    if any(tform.__class__.__name__ == "PairedTransform" for tform in transform_list):
+        return transform_list[0]  # Return the paired transform directly
+    else:
+        return transforms.Compose(transform_list)
 
 def build_dataset(cfg):
-    dataset_cls = getattr(datasets, cfg.name)
-    dataset = dataset_cls(**cfg.params)
-
-    wrapper_name = cfg.get("wrapper", None)
-    wrapper_cls = WRAPPER_REGISTRY.get(wrapper_name)
-    if wrapper_cls is None:
-        raise ValueError(f"Unknown wrapper '{wrapper_name}'")
-
-    # Handle new structure: transform.mode and transform.views
-    transform_cfg = cfg.get("transform", None)
-    transform_fn = None
-
-    if transform_cfg:
-        mode = transform_cfg.get("mode", "single")
-        views = transform_cfg.get("views", [])
-
-        if mode == "single":
-            transform_fn = build_transform(views[0])  # views[0] is the only view list
-        else:
-            raise NotImplementedError(f"Transform mode '{mode}' is not supported")
-
-    return wrapper_cls(dataset, transform=transform_fn)
-
-
+    # Convert to native Python types for compatibility
+    cfg_dict = OmegaConf.to_container(cfg, resolve=True)
+    
+    # Extract dataset parameters
+    dataset_params = cfg_dict.get("params", {}).copy()
+    dataset_name = cfg_dict["name"]
+    wrapper_name = cfg_dict.get("wrapper", None)
+    
+    # Handle transform separately
+    transform_cfg = cfg_dict.get("transform", None)
+    transform_fn = build_transform(transform_cfg) if transform_cfg else None
+    
+    # Handle wrapped datasets (e.g., contrastive)
+    if wrapper_name:
+        # Create base dataset without transform
+        base_dataset = get_dataset(dataset_name, **dataset_params)
+        
+        # Get wrapper class directly from registry
+        if wrapper_name not in DATASET_REGISTRY:
+            raise ValueError(f"Wrapper dataset '{wrapper_name}' not found in registry")
+            
+        wrapper_cls = DATASET_REGISTRY[wrapper_name]
+        
+        # Pass base_dataset as first positional argument
+        return wrapper_cls(base_dataset, transform=transform_fn)
+    else:
+        # For non-wrapped datasets, apply transform directly
+        if transform_fn:
+            dataset_params["transform"] = transform_fn
+        return get_dataset(dataset_name, **dataset_params)
 
 def build_dataloader(dataset, cfg: DictConfig):
+    # Convert to native Python types for compatibility
+    cfg = OmegaConf.to_container(cfg, resolve=True)
+    
+    # Extract parameters from the 'params' sub-dictionary or use top-level
+    params = cfg.get("params", cfg)
+    
     return DataLoader(
         dataset,
-        batch_size=cfg.batch_size,
-        shuffle=cfg.shuffle,
-        num_workers=cfg.num_workers,
-        drop_last=cfg.drop_last
+        batch_size=params["batch_size"],
+        shuffle=params["shuffle"],
+        num_workers=params["num_workers"],
+        drop_last=params.get("drop_last", False)
     )

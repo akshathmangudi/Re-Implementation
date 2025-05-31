@@ -96,6 +96,10 @@ class AutoEncoder(BaseAutoEncoder):
             mu, sigma = self.encode(x)
             z = self.reparameterize(mu, sigma)
             decoded = self.decode(z)
-            return decoded, mu, sigma
+            return {
+                "recon": decoded,
+                "mu": mu,
+                "logvar": torch.log(sigma.pow(2))  # Convert sigma to logvar
+            }
         else:
             raise ValueError(f"Unknown autoencoder type: {self.type}")

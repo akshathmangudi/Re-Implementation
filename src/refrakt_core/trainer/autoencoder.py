@@ -16,10 +16,14 @@ class AETrainer(BaseTrainer):
         loss_fn,
         optimizer_cls,
         optimizer_args=None,
-        device="cuda"
+        device="cuda",
+        scheduler=None,  # Added scheduler parameter
+        **kwargs  # Added kwargs for future compatibility
     ):
         super().__init__(model, train_loader, val_loader, device)
         self.loss_fn = loss_fn
+        self.scheduler = scheduler  # Store scheduler
+        self.extra_params = kwargs  # Store additional parameters
 
         if optimizer_args is None:
             optimizer_args = {"lr": 1e-3}
@@ -44,25 +48,12 @@ class AETrainer(BaseTrainer):
                 self.optimizer.zero_grad()
                 raw_outputs = self.model(inputs)
 
-                # === Handle structured outputs for custom loss functions ===
-                if isinstance(raw_outputs, dict):
-                    loss = self.loss_fn(raw_outputs)
-                elif isinstance(raw_outputs, tuple) and len(raw_outputs) == 3:
-                    recon, mask, original = raw_outputs
-                    structured_output = {
-                        "recon_patches": recon,
-                        "mask": mask,
-                        "original_patches": original
-                    }
-                    loss = self.loss_fn(structured_output)
-                else:
-                    loss = self.loss_fn(raw_outputs, inputs)
-
+                # Handle all outputs with the same interface
+                loss = self.loss_fn(raw_outputs, inputs)
                 loss.backward()
                 self.optimizer.step()
 
                 loop.set_postfix({"loss": loss.item()})
-
 
     def evaluate(self):
         self.model.eval()
@@ -80,20 +71,8 @@ class AETrainer(BaseTrainer):
 
                 inputs = inputs.to(self.device)
                 raw_outputs = self.model(inputs)
-
-                if isinstance(raw_outputs, dict):
-                    loss = self.loss_fn(raw_outputs)
-                elif isinstance(raw_outputs, tuple) and len(raw_outputs) == 3:
-                    recon, mask, original = raw_outputs
-                    structured_output = {
-                        "recon_patches": recon,
-                        "mask": mask,
-                        "original_patches": original
-                    }
-                    loss = self.loss_fn(structured_output)
-                else:
-                    loss = self.loss_fn(raw_outputs, inputs)
-
+                
+                loss = self.loss_fn(raw_outputs, inputs)
                 total_loss += loss.item()
 
         avg_val_loss = total_loss / len(self.val_loader)

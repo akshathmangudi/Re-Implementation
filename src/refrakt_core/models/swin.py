@@ -7,9 +7,9 @@ from refrakt_core.utils.classes.utils import Merge
 
 @register_model("swin")
 class SwinTransformer(nn.Module):
-    def __init__(self, num_classes=10):
+    def __init__(self, in_channels=3, num_classes=10):
         super().__init__()
-        self.embedding = Embedding()
+        self.embedding = Embedding(in_channels=in_channels)
         self.patch1 = Merge(96)
         self.patch2 = Merge(192)
         self.patch3 = Merge(384)
@@ -36,4 +36,3 @@ class SwinTransformer(nn.Module):
         x = x.mean(dim=1)
         x = self.head(x)
         return x
-

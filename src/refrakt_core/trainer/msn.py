@@ -1,5 +1,3 @@
-# src/refrakt_core/trainer/msn.py
-
 import torch
 from tqdm import tqdm
 from torch.nn.utils import clip_grad_norm_
@@ -10,15 +8,33 @@ from refrakt_core.registry.trainer_registry import register_trainer
 @register_trainer("msn")
 class MSNTrainer(BaseTrainer):
     def __init__(
-        self, model, train_loader, loss_fn, optimizer_cls, optimizer_args,
-        device="cpu", ema_base=0.996, grad_clip=None
+        self,
+        model,
+        train_loader,
+        val_loader,  # Added val_loader parameter
+        loss_fn,
+        optimizer_cls,
+        optimizer_args=None,  # Changed to match other trainers
+        device="cpu",
+        scheduler=None,  # Added scheduler parameter
+        **kwargs  # Added kwargs for additional parameters
     ):
-        super().__init__(model=model, device=device, train_loader=train_loader, val_loader=None)
-        self.train_loader = train_loader
+        # Initialize base class with all required parameters
+        super().__init__(model, train_loader, val_loader, device)
+        
         self.loss_fn = loss_fn
+        self.scheduler = scheduler
+        
+        # Extract MSN-specific parameters from kwargs
+        self.ema_base = kwargs.pop('ema_base', 0.996)
+        self.grad_clip = kwargs.pop('grad_clip', None)
+        self.extra_params = kwargs  # Store any remaining parameters
+        
+        # Create optimizer with provided arguments
+        if optimizer_args is None:
+            optimizer_args = {}
         self.optimizer = optimizer_cls(model.parameters(), **optimizer_args)
-        self.grad_clip = grad_clip
-        self.ema_base = ema_base
+        
         self.global_step = 0
 
     def update_ema(self, momentum):
@@ -67,4 +83,6 @@ class MSNTrainer(BaseTrainer):
             print(f"[Epoch {epoch+1}] Avg Loss: {avg_loss:.4f}")
 
     def evaluate(self):
+        # Implement basic evaluation if needed
         print("[MSNTrainer] Evaluation not implemented for self-supervised pretraining.")
+        return 0.0  # Return float for consistency

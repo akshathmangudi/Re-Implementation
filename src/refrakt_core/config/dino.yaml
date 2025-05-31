@@ -25,10 +25,11 @@ dataset:
         std: [0.2023, 0.1994, 0.2010]
 
 dataloader:
-  batch_size: 128
-  shuffle: true
-  num_workers: 4
-  drop_last: true
+  params: 
+    batch_size: 32
+    shuffle: true
+    num_workers: 4
+    drop_last: true
 
 model:
   name: dino

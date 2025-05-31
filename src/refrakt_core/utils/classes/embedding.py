@@ -3,9 +3,9 @@ from torch import nn
 from einops import rearrange
 
 class Embedding(nn.Module):
-    def __init__(self, patch_size=4, C=96):
+    def __init__(self, patch_size=4, C=96, in_channels=3):  # Add in_channels parameter
         super().__init__()
-        self.linear = nn.Conv2d(3, C, kernel_size=patch_size, stride=patch_size)
+        self.linear = nn.Conv2d(in_channels, C, kernel_size=patch_size, stride=patch_size)
         self.layer_norm = nn.LayerNorm(C)
         self.relu = nn.ReLU()
 

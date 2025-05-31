@@ -15,16 +15,18 @@ dataset:
 
 dataloader:
   params:
-    batch_size: 128
+    batch_size: 32
     shuffle: true
     num_workers: 4
     drop_last: false
 
 model:
-  name: convnext
+  name: vit
   params:
     in_channels: 1
     num_classes: 10
+    image_size: 28  # Must match actual image size
+    patch_size: 7   # 28/7=4 patches per dimension (4x4=16 total patches)
 
 loss:
   name: cross_entropy
