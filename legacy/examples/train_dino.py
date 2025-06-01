@@ -1,23 +1,25 @@
 import os
 import sys
-import torch
 from pathlib import Path
+
+import torch
 
 # Ensure access to refrakt_core
 project_root = Path(__file__).parent.parent.resolve()
 sys.path.append(str(project_root / "src"))
 
 from torch import optim
-from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
 
-from refrakt_core.trainer.dino import DINOTrainer
+import refrakt_core.losses  # triggers loss registration
+import refrakt_core.models  # triggers model registration
+import refrakt_core.trainer  # triggers trainer registration
 from refrakt_core.datasets import ContrastiveDataset
 from refrakt_core.losses.dino import DINOLoss
 from refrakt_core.registry.model_registry import get_model
-import refrakt_core.models  # triggers model registration
-import refrakt_core.trainer  # triggers trainer registration
-import refrakt_core.losses  # triggers loss registration
+from refrakt_core.trainer.dino import DINOTrainer
+
 
 def main():
     # Define standard DINO augmentations

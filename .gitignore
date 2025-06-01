@@ -169,3 +169,4 @@ refrakt_venv/
 zips/
 requirements.txt
 .pypirc
+checkpoints/

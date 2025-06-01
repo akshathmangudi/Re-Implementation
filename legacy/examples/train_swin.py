@@ -1,18 +1,20 @@
 import os
 import sys
-import torch
 from pathlib import Path
+
+import torch
 
 project_root = Path(__file__).parent.parent.resolve()
 sys.path.append(str(project_root / "src"))
 
 from torch import nn, optim
-from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
 
-from refrakt_core.trainer.supervised import SupervisedTrainer
+import refrakt_core.models
 from refrakt_core.registry.model_registry import get_model
-import refrakt_core.models 
+from refrakt_core.trainer.supervised import SupervisedTrainer
+
 
 def main():
     transform = transforms.Compose([

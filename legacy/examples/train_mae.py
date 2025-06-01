@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 from pathlib import Path
 
 project_root = Path(__file__).parent.parent.resolve()
@@ -8,14 +8,15 @@ sys.path.append(str(project_root / "src"))
 import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-from refrakt_core.trainer.autoencoder import AETrainer
-from refrakt_core.registry.model_registry import get_model
-from refrakt_core.losses.mae import MAELoss
-from refrakt_core.transforms import PatchifyTransform
 
+import refrakt_core.losses
 import refrakt_core.models
 import refrakt_core.trainer
-import refrakt_core.losses
+from refrakt_core.losses.mae import MAELoss
+from refrakt_core.registry.model_registry import get_model
+from refrakt_core.trainer.autoencoder import AETrainer
+from refrakt_core.transforms import PatchifyTransform
+
 
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

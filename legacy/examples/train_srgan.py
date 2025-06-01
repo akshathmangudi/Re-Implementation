@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 from pathlib import Path
 
 project_root = Path(__file__).parent.parent.resolve()
@@ -9,12 +9,14 @@ sys.path.append(str(project_root / "src"))
 import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
-from refrakt_core.trainer.gan import GANTrainer
+
+import refrakt_core.models
 from refrakt_core.datasets import SuperResolutionDataset
-from refrakt_core.transforms import PairedTransform
 from refrakt_core.losses.gan import GANLoss
 from refrakt_core.registry.model_registry import get_model
-import refrakt_core.models
+from refrakt_core.trainer.gan import GANTrainer
+from refrakt_core.transforms import PairedTransform
+
 
 def get_srgan_dataloaders(data_root, batch_size=16, num_workers=4, crop_size=96):
     transform = PairedTransform(crop_size)

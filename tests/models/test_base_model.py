@@ -1,7 +1,9 @@
 import pytest
 import torch
 import torch.nn as nn
+
 from refrakt_core.models.templates.base import BaseModel
+
 
 class TestModel(BaseModel):
     def __init__(self):

@@ -2,22 +2,24 @@
 
 import os
 import sys
-import torch
 from pathlib import Path
+
+import torch
 
 project_root = Path(__file__).parent.parent.resolve()
 sys.path.append(str(project_root / "src"))
 
 from torch import optim
-from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-from refrakt_core.trainer.msn import MSNTrainer
+from torchvision import datasets, transforms
+
+import refrakt_core.losses
+import refrakt_core.models  # Needed to trigger @register_model decorators
+import refrakt_core.trainer
 from refrakt_core.losses.msn import MSNLoss
 from refrakt_core.registry.model_registry import get_model
-import refrakt_core.models  # Needed to trigger @register_model decorators
+from refrakt_core.trainer.msn import MSNTrainer
 
-import refrakt_core.trainer
-import refrakt_core.losses
 
 def main():
     transform = transforms.Compose([

@@ -1,8 +1,9 @@
-import torch
-import pytest
 import numpy as np
-from PIL import Image
+import pytest
+import torch
 import torchvision.transforms as T
+from PIL import Image
+
 from refrakt_core.losses.perceptual import PerceptualLoss
 
 

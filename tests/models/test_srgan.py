@@ -1,5 +1,7 @@
-import torch
 import tempfile
+
+import torch
+
 from refrakt_core.models.srgan import SRGAN
 
 

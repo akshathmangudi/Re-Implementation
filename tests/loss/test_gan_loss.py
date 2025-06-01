@@ -1,6 +1,8 @@
-import torch
 import pytest
+import torch
+
 from refrakt_core.losses.gan import GANLoss
+
 
 @pytest.mark.parametrize("use_lsgan", [True, False])
 def test_gan_loss_basic(use_lsgan):

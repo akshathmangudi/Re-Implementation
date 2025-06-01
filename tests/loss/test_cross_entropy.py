@@ -1,5 +1,6 @@
-import torch
 import pytest
+import torch
+
 from refrakt_core.losses.cross_entropy import CrossEntropyLoss
 
 

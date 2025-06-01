@@ -1,6 +1,9 @@
 import pytest
 import torch
-from refrakt_core.registry.model_registry import MODEL_REGISTRY, register_model, get_model
+
+from refrakt_core.registry.model_registry import (MODEL_REGISTRY, get_model,
+                                                  register_model)
+
 
 class TestModelRegistry:
     def test_registry_contains_models(self):

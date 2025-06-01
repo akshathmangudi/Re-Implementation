@@ -2,7 +2,9 @@ import pytest
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from refrakt_core.models.autoencoder import AutoEncoder
+
 
 class TestAutoEncoder:
     @pytest.fixture

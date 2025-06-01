@@ -1,18 +1,20 @@
 import os
 import sys
-import torch
 from pathlib import Path
+
+import torch
 from omegaconf import OmegaConf
+
 
 def run_main(config_path: str):
     # === Imports moved inside for isolation ===
-    from refrakt_core.registry.trainer_registry import get_trainer
-    from refrakt_core.registry.loss_registry import get_loss
-    from refrakt_core.registry.model_registry import get_model
-    from refrakt_core.loader import build_dataset, build_dataloader
+    import refrakt_core.losses
     import refrakt_core.models
     import refrakt_core.trainer
-    import refrakt_core.losses
+    from refrakt_core.loader import build_dataloader, build_dataset
+    from refrakt_core.registry.loss_registry import get_loss
+    from refrakt_core.registry.model_registry import get_model
+    from refrakt_core.registry.trainer_registry import get_trainer
 
     cfg = OmegaConf.load(config_path)
 
