@@ -1,6 +1,7 @@
 import torch
-from torch import nn
 from einops import rearrange
+from torch import nn
+
 
 class Embedding(nn.Module):
     def __init__(self, patch_size=4, C=96, in_channels=3):  # Add in_channels parameter

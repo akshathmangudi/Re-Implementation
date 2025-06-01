@@ -1,15 +1,18 @@
-import os 
-import torch
+import os
 import shutil
-import requests
 import zipfile
-import numpy as np
 from pathlib import Path
+from typing import Dict, List, Tuple
+
 import matplotlib.pyplot as plt
-from typing import Tuple, List, Dict
+import numpy as np
+import requests
+import torch
+from torchvision import transforms
+
 from refrakt_core.utils import config
 from refrakt_core.utils.config import SCALE_FACTOR
-from torchvision import transforms
+
 
 def patchify(images, n_patches):
     """
@@ -261,6 +264,7 @@ def random_masking(x, mask_ratio):
 # src/refrakt_core/utils/augment.py
 
 import torch
+
 
 def random_patch_masking(x, mask_ratio=0.6, patch_size=16):
     """

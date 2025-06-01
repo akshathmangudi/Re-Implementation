@@ -1,10 +1,11 @@
 import torch
 from torch import autocast
 from torch.amp import GradScaler
-from refrakt_core.trainer.base import BaseTrainer
-import torch.nn.functional as F
 from tqdm import tqdm
+
 from refrakt_core.registry.trainer_registry import register_trainer
+from refrakt_core.trainer.base import BaseTrainer
+
 
 @register_trainer("dino")
 class DINOTrainer(BaseTrainer):
@@ -20,8 +21,9 @@ class DINOTrainer(BaseTrainer):
         device="cuda",
         **kwargs
     ):
-        super().__init__(model, train_loader, val_loader, device)
-
+        # Add model_name and save_dir via kwargs
+        super().__init__(model, train_loader, val_loader, device, **kwargs)
+        
         if loss_fn is None:
             raise ValueError("loss_fn is required for DINOTrainer")
         self.loss_fn = loss_fn
@@ -78,6 +80,7 @@ class DINOTrainer(BaseTrainer):
 
 
     def train(self, num_epochs):
+        best_accuracy = 0.0
         for epoch in range(num_epochs):
             self.model.train()
             total_loss = 0.0
@@ -111,8 +114,19 @@ class DINOTrainer(BaseTrainer):
             if self.scheduler:
                 self.scheduler.step()
 
+            current_accuracy = self.evaluate()
+            if current_accuracy > best_accuracy:
+                best_accuracy = current_accuracy
+                self.save(suffix="best_model")
+                print(f"New best model saved with accuracy: {best_accuracy * 100:.2f}%")
+            
+            # Always save the latest model
+            self.save(suffix="latest")
+
             avg_loss = total_loss / len(self.train_loader)
             print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}")
+        
+        
 
     def evaluate(self):
         if self.val_loader is None:

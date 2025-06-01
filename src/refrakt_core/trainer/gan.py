@@ -1,7 +1,9 @@
-from tqdm import tqdm
 import torch
-from refrakt_core.trainer.base import BaseTrainer
+from tqdm import tqdm
+
 from refrakt_core.registry.trainer_registry import register_trainer
+from refrakt_core.trainer.base import BaseTrainer
+
 
 @register_trainer("gan")
 class GANTrainer(BaseTrainer):
@@ -10,15 +12,14 @@ class GANTrainer(BaseTrainer):
         model,
         train_loader,
         val_loader,
-        loss_fn,  # Dictionary of loss functions
+        loss_fn,
         optimizer,  # Dictionary of optimizers
         device="cuda",
         scheduler=None,
         **kwargs
     ):
-        super().__init__(model, train_loader, val_loader, device)
+        super().__init__(model, train_loader, val_loader, device, **kwargs)
         
-        # Ensure both loss and optimizer are dicts
         if not isinstance(loss_fn, dict) or not {"generator", "discriminator"}.issubset(loss_fn.keys()):
             raise ValueError("loss_fn must be a dictionary with 'generator' and 'discriminator' keys")
         
@@ -26,8 +27,8 @@ class GANTrainer(BaseTrainer):
             raise ValueError("optimizer must be a dictionary with 'generator' and 'discriminator' keys")
 
         self.loss_fns = loss_fn
-        self.optimizers = optimizer
-        self.extra_params = kwargs
+        self.optimizer = optimizer  # Set as dictionary
+        self.scheduler = scheduler  # Could be dict or single scheduler
 
     def train(self, num_epochs):
         for epoch in range(num_epochs):
@@ -44,7 +45,7 @@ class GANTrainer(BaseTrainer):
                 # Use the model's training_step method if available
                 losses = self.model.training_step(
                     device_batch, 
-                    optimizer=self.optimizers, 
+                    optimizer=self.optimizer, 
                     loss_fn=self.loss_fns, 
                     device=self.device
                 )

@@ -1,10 +1,13 @@
+from typing import Tuple
+
 import torch
 import torch.nn as nn
-from typing import Tuple
-from refrakt_core.utils.classes.resnet import ViTResidual
+
 from refrakt_core.models.templates.models import BaseClassifier
-from refrakt_core.utils.methods import positional_embeddings, patchify
 from refrakt_core.registry.model_registry import register_model
+from refrakt_core.utils.classes.resnet import ViTResidual
+from refrakt_core.utils.methods import patchify, positional_embeddings
+
 
 @register_model("vit")
 class VisionTransformer(BaseClassifier):

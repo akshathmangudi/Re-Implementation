@@ -1,8 +1,11 @@
-import torch
 import random
+
+import torch
 import torchvision.transforms as T
 from torchvision.transforms import functional as TF
+
 from refrakt_core.registry.transform_registry import register_transform
+
 
 @register_transform("paired")
 class PairedTransform:

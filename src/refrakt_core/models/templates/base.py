@@ -1,8 +1,9 @@
+from abc import ABC, abstractmethod
+from typing import Any, Dict
+
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-from typing import Dict, Any
-from abc import ABC, abstractmethod
 
 
 class BaseModel(nn.Module, ABC):

@@ -1,12 +1,14 @@
 # src/refrakt_core/models/msn.py
 
+import copy
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from timm import create_model
+
 from refrakt_core.models.templates.base import BaseModel
 from refrakt_core.registry.model_registry import register_model
-import copy
 
 
 @register_model("msn")

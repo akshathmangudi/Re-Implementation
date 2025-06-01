@@ -42,5 +42,7 @@ scheduler: null
 trainer:
   name: supervised
   params:
+    save_dir: "./checkpoints"
+    model_name: "vit"
     num_epochs: 1
     device: cuda

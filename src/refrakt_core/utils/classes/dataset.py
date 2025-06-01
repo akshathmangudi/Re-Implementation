@@ -1,8 +1,10 @@
-import torch
-from PIL import Image
 from pathlib import Path
 from typing import Tuple
+
+import torch
+from PIL import Image
 from torch.utils.data import Dataset
+
 from refrakt_core.utils.methods import find_classes
 
 

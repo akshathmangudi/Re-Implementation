@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
+
 from refrakt_core.losses.templates.base import BaseLoss
 from refrakt_core.registry.loss_registry import register_loss
+
 
 @register_loss("nt_xent")
 class NTXentLoss(BaseLoss):

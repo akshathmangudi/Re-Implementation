@@ -1,5 +1,7 @@
-from torch import nn 
+from torch import nn
+
 from refrakt_core.utils.classes.attention import ShiftedWindowMSA
+
 
 class SwinBlock(nn.Module):
     def __init__(self, embed_dim, num_heads, window_size, mask):

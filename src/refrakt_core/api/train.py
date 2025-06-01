@@ -1,8 +1,10 @@
-import os
 import gc
+import os
 import sys
-import torch
 from pathlib import Path
+from typing import Optional
+
+import torch
 from omegaconf import OmegaConf
 
 # Add project root to path
@@ -11,18 +13,21 @@ sys.path.append(str(project_root))
 gc.collect()
 torch.cuda.empty_cache()
 
+from refrakt_core.api.builders.dataloader_builder import build_dataloader
+# Import new builders
+from refrakt_core.api.builders.dataset_builder import build_dataset
 
-def main(config_path: str):
+
+def train(config_path: str, model_path: Optional[str] = None):
     # === Import within function to handle path issues ===
-    from refrakt_core.registry.trainer_registry import get_trainer
+    import refrakt_core.datasets
+    import refrakt_core.losses
+    import refrakt_core.models
+    import refrakt_core.registry
+    import refrakt_core.trainer
     from refrakt_core.registry.loss_registry import get_loss
     from refrakt_core.registry.model_registry import get_model
-    from refrakt_core.loader import build_dataset, build_dataloader
-    import refrakt_core.models
-    import refrakt_core.trainer
-    import refrakt_core.losses
-    import refrakt_core.registry
-    import refrakt_core.datasets
+    from refrakt_core.registry.trainer_registry import get_trainer
 
     try:
         # Load configuration
@@ -199,10 +204,14 @@ def main(config_path: str):
         # === Training ===
         print(f"\nStarting training for {num_epochs} epochs...")  # Use extracted num_epochs
         trainer.train(num_epochs=num_epochs)
+
+        print("Saving model now...")
+        trainer.save(path=model_path)
+
         
         # === Final Evaluation ===
-        print("\nRunning final evaluation...")
-        trainer.evaluate()
+        # print("\nRunning final evaluation...")
+        # trainer.evaluate()
         
         print("\nTraining completed successfully!")
 
@@ -212,13 +221,11 @@ def main(config_path: str):
         traceback.print_exc()
         sys.exit(1)
 
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, required=True,
-                        help="Path to configuration YAML file")
-    args = parser.parse_args()
+# if __name__ == "__main__":
+#     import argparse
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("--config", type=str, required=True,
+#                         help="Path to configuration YAML file")
+#     args = parser.parse_args()
     
-    main(args.config)
-    # config_path = "./src/refrakt_core/config/simclr.yaml"
-    # main(config_path)
+#     train(args.config)

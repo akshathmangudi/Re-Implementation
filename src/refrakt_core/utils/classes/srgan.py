@@ -1,6 +1,8 @@
 import math
+
 import torch
 from torch import nn
+
 from refrakt_core.utils.classes.resnet import ResidualBlock
 
 

@@ -3,9 +3,11 @@
 import torch
 import torch.nn as nn
 from einops import rearrange
+
 from refrakt_core.models.templates.base import BaseModel
 from refrakt_core.registry.model_registry import register_model
 from refrakt_core.utils.methods import get_2d_sincos_pos_embed, random_masking
+
 
 @register_model("mae")
 class MAE(BaseModel):

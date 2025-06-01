@@ -1,9 +1,10 @@
 # trainer/ae.py
 
-from tqdm import tqdm
 import torch
-from refrakt_core.trainer.base import BaseTrainer
+from tqdm import tqdm
+
 from refrakt_core.registry.trainer_registry import register_trainer
+from refrakt_core.trainer.base import BaseTrainer
 
 
 @register_trainer("autoencoder")
@@ -17,19 +18,19 @@ class AETrainer(BaseTrainer):
         optimizer_cls,
         optimizer_args=None,
         device="cuda",
-        scheduler=None,  # Added scheduler parameter
-        **kwargs  # Added kwargs for future compatibility
+        scheduler=None,
+        **kwargs
     ):
-        super().__init__(model, train_loader, val_loader, device)
+        # Add model_name and save_dir via kwargs
+        super().__init__(model, train_loader, val_loader, device, **kwargs)
         self.loss_fn = loss_fn
-        self.scheduler = scheduler  # Store scheduler
-        self.extra_params = kwargs  # Store additional parameters
-
+        self.scheduler = scheduler
+        
         if optimizer_args is None:
             optimizer_args = {"lr": 1e-3}
-
+            
         self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
-
+        
     def train(self, num_epochs):
         for epoch in range(num_epochs):
             self.model.train()

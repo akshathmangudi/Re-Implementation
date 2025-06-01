@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from refrakt_core.registry.loss_registry import register_loss
+
 
 @register_loss("vae")
 class VAELoss(nn.Module):

@@ -43,5 +43,7 @@ scheduler:
 trainer:
   name: "autoencoder"
   params:
+    save_dir: "./checkpoints"
+    model_name: "autoencoder"
     num_epochs: 1
     device: "cuda"

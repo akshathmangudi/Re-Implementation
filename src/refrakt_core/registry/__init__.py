@@ -1,7 +1,13 @@
-from refrakt_core.registry.model_registry import register_model, get_model, MODEL_REGISTRY
-from refrakt_core.registry.loss_registry import register_loss, get_loss, LOSS_REGISTRY
-from refrakt_core.registry.trainer_registry import register_trainer, get_trainer, TRAINER_REGISTRY
-from refrakt_core.registry.dataset_registry import register_dataset, get_dataset, DATASET_REGISTRY
+from refrakt_core.registry.dataset_registry import (DATASET_REGISTRY,
+                                                    get_dataset,
+                                                    register_dataset)
+from refrakt_core.registry.loss_registry import (LOSS_REGISTRY, get_loss,
+                                                 register_loss)
+from refrakt_core.registry.model_registry import (MODEL_REGISTRY, get_model,
+                                                  register_model)
+from refrakt_core.registry.trainer_registry import (TRAINER_REGISTRY,
+                                                    get_trainer,
+                                                    register_trainer)
 
 __all__ = [
     "register_model", "get_model", "MODEL_REGISTRY",

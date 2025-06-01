@@ -1,6 +1,8 @@
-from torch import nn 
+from torch import nn
+
 from refrakt_core.utils.classes.attention import MSA
 from refrakt_core.utils.classes.utils import LayerNormalization
+
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1, downsample=None):

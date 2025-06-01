@@ -61,5 +61,7 @@ scheduler:
 trainer:
   name: contrastive  # Matches ContrastiveTrainer
   params:
+    save_dir: "./checkpoints"
+    model_name: "simclr"
     num_epochs: 1
     device: cuda

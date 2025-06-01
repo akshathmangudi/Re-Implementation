@@ -1,7 +1,9 @@
 import math
+
 import torch
-from torch import nn 
 from einops import rearrange
+from torch import nn
+
 
 class LayerNormalization(nn.Module):
     def __init__(self, eps: float = 10**-6) -> None:

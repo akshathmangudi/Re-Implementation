@@ -1,9 +1,11 @@
 import torch
-from tqdm import tqdm
 from torch.nn.utils import clip_grad_norm_
+from tqdm import tqdm
+
+from refrakt_core.registry.trainer_registry import register_trainer
 from refrakt_core.trainer.base import BaseTrainer
 from refrakt_core.utils.methods import random_patch_masking
-from refrakt_core.registry.trainer_registry import register_trainer
+
 
 @register_trainer("msn")
 class MSNTrainer(BaseTrainer):
@@ -11,26 +13,22 @@ class MSNTrainer(BaseTrainer):
         self,
         model,
         train_loader,
-        val_loader,  # Added val_loader parameter
+        val_loader,
         loss_fn,
         optimizer_cls,
-        optimizer_args=None,  # Changed to match other trainers
+        optimizer_args=None,
         device="cpu",
-        scheduler=None,  # Added scheduler parameter
-        **kwargs  # Added kwargs for additional parameters
+        scheduler=None,
+        **kwargs
     ):
-        # Initialize base class with all required parameters
-        super().__init__(model, train_loader, val_loader, device)
+        # Add model_name and save_dir via kwargs
+        super().__init__(model, train_loader, val_loader, device, **kwargs)
         
         self.loss_fn = loss_fn
         self.scheduler = scheduler
-        
-        # Extract MSN-specific parameters from kwargs
         self.ema_base = kwargs.pop('ema_base', 0.996)
         self.grad_clip = kwargs.pop('grad_clip', None)
-        self.extra_params = kwargs  # Store any remaining parameters
         
-        # Create optimizer with provided arguments
         if optimizer_args is None:
             optimizer_args = {}
         self.optimizer = optimizer_cls(model.parameters(), **optimizer_args)

@@ -1,7 +1,9 @@
 import torch.nn as nn
-from refrakt_core.registry.model_registry import register_model
+
 from refrakt_core.models.templates.models import BaseClassifier
-from refrakt_core.utils.classes.resnet import ResidualBlock, BottleneckBlock
+from refrakt_core.registry.model_registry import register_model
+from refrakt_core.utils.classes.resnet import BottleneckBlock, ResidualBlock
+
 
 class ResNet(BaseClassifier):
     def __init__(

@@ -1,11 +1,14 @@
-import os 
-import torch
-from PIL import Image
+import os
 from pathlib import Path
-import torch.nn as nn 
+
+import torch
+import torch.nn as nn
 import torchvision.transforms as T
+from PIL import Image
 from torch.utils.data import Dataset
+
 from refrakt_core.registry.dataset_registry import register_dataset
+
 
 @register_dataset("contrastive")
 class ContrastiveDataset(Dataset):

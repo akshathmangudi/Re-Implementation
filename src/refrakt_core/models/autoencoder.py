@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
-from refrakt_core.registry.model_registry import register_model
+
 from refrakt_core.models.templates.models import BaseAutoEncoder
+from refrakt_core.registry.model_registry import register_model
+
 
 @register_model("autoencoder")
 class AutoEncoder(BaseAutoEncoder):

@@ -3,6 +3,7 @@ import random
 import shutil
 from pathlib import Path
 
+
 def rename_lr_images(lr_dir="../data/DIV2K/LR"):
     lr_path = Path(lr_dir)
     for file in lr_path.glob("*x2.png"):

@@ -1,6 +1,8 @@
-import torch
-from typing import Any, Dict
 from abc import abstractmethod
+from typing import Any, Dict
+
+import torch
+
 from refrakt_core.models.templates.base import BaseModel
 
 
@@ -160,9 +162,11 @@ class BaseContrastiveModel(BaseModel):
         base.update({"backbone": self.backbone_name, "projection_dim": self.proj_dim})
         return base
 
-import torch
-from typing import Dict, Any
 from abc import abstractmethod
+from typing import Any, Dict
+
+import torch
+
 from refrakt_core.models.templates.base import BaseModel
 
 

@@ -45,7 +45,9 @@ scheduler:
 trainer:
   name: "msn"
   params:
-    num_epochs: 10
+    save_dir: "./checkpoints"
+    model_name: "msn"
+    num_epochs: 1
     device: "cuda"
     ema_base: 0.996
     grad_clip: null

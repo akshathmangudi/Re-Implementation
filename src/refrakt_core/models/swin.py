@@ -1,9 +1,11 @@
-import torch.nn as nn
 import torch
+import torch.nn as nn
+
 from refrakt_core.registry.model_registry import register_model
 from refrakt_core.utils.classes.embedding import Embedding
 from refrakt_core.utils.classes.swin import AlternateSwin
 from refrakt_core.utils.classes.utils import Merge
+
 
 @register_model("swin")
 class SwinTransformer(nn.Module):

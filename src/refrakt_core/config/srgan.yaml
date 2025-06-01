@@ -45,5 +45,7 @@ scheduler: null
 trainer:
   name: "gan"
   params:
+    save_dir: "./checkpoints"
+    model_name: "srgan"
     num_epochs: 1
     device: "cuda"

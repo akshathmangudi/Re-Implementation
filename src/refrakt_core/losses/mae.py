@@ -1,6 +1,9 @@
 import torch
+
+from refrakt_core.losses.templates.base import \
+    BaseLoss  # adjust import path if needed
 from refrakt_core.registry.loss_registry import register_loss
-from refrakt_core.losses.templates.base import BaseLoss  # adjust import path if needed
+
 
 @register_loss("mae")
 class MAELoss(BaseLoss):

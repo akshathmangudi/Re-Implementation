@@ -40,5 +40,7 @@ scheduler: null
 trainer:
   name: supervised
   params:
+    save_dir: "./checkpoints"
+    model_name: "convnext"
     num_epochs: 1
     device: cuda

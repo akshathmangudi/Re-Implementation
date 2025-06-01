@@ -1,7 +1,9 @@
-from tqdm import tqdm
 import torch
-from refrakt_core.trainer.base import BaseTrainer
+from tqdm import tqdm
+
 from refrakt_core.registry.trainer_registry import register_trainer
+from refrakt_core.trainer.base import BaseTrainer
+
 
 @register_trainer("contrastive")
 class ContrastiveTrainer(BaseTrainer):
@@ -17,7 +19,7 @@ class ContrastiveTrainer(BaseTrainer):
         scheduler=None,  # Add scheduler parameter
         **kwargs  # Add kwargs for future compatibility
     ):
-        super().__init__(model, train_loader, val_loader, device)
+        super().__init__(model, train_loader, val_loader, device, **kwargs)
         self.loss_fn = loss_fn
         self.scheduler = scheduler  # Store scheduler
         self.extra_params = kwargs  # Store additional parameters
@@ -28,6 +30,7 @@ class ContrastiveTrainer(BaseTrainer):
         self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
 
     def train(self, num_epochs):
+        best_accuracy = 0.0
         for epoch in range(num_epochs):
             self.model.train()
             loop = tqdm(self.train_loader, desc=f"Epoch {epoch+1}/{num_epochs}")
@@ -68,6 +71,15 @@ class ContrastiveTrainer(BaseTrainer):
                 self.scheduler.step()
                 current_lr = self.optimizer.param_groups[0]['lr']
                 print(f"Epoch {epoch+1}: learning rate = {current_lr:.6f}")
+            
+            current_accuracy = self.evaluate()
+            if current_accuracy > best_accuracy:
+                best_accuracy = current_accuracy
+                self.save(suffix="best_model")
+                print(f"New best model saved with accuracy: {best_accuracy * 100:.2f}%")
+            
+            # Always save the latest model
+            self.save(suffix="latest")
             
             # Log epoch-level metrics
             avg_epoch_loss = epoch_loss / len(self.train_loader)

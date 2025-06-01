@@ -1,7 +1,9 @@
 import torch.nn as nn
+
 from refrakt_core.models.dino import DINOModel
-from refrakt_core.registry.model_registry import register_model
 from refrakt_core.models.resnet import ResNet18, ResNet50, ResNet101, ResNet152
+from refrakt_core.registry.model_registry import register_model
+
 
 class DINOBackboneWrapper(nn.Module):
     def __init__(self, backbone):

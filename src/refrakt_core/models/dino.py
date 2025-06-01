@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from refrakt_core.models.templates.base import BaseModel
 from refrakt_core.registry.model_registry import register_model
 

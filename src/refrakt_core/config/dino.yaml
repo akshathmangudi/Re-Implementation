@@ -58,5 +58,7 @@ scheduler:
 trainer:
   name: dino
   params:
+    save_dir: "./checkpoints"
+    model_name: "dino"
     num_epochs: 1
     device: cuda
