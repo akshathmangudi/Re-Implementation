@@ -14,7 +14,9 @@ class DINOLoss(BaseLoss):
     using temperature scaling and centering mechanisms.
     """
 
-    def __init__(self, out_dim=65536, teacher_temp=0.04, student_temp=0.1, center_momentum=0.9):
+    def __init__(
+        self, out_dim=65536, teacher_temp=0.04, student_temp=0.1, center_momentum=0.9
+    ):
         super().__init__(name="DINOLoss")
         self.student_temp = student_temp
         self.teacher_temp = teacher_temp
@@ -43,10 +45,14 @@ class DINOLoss(BaseLoss):
         n_loss_terms = 0
 
         # Center and sharpen teacher output
-        teacher_probs = F.softmax((teacher_output - self.center) / self.teacher_temp, dim=-1)
+        teacher_probs = F.softmax(
+            (teacher_output - self.center) / self.teacher_temp, dim=-1
+        )
 
         for v in range(n_views):
-            student_probs = F.log_softmax(student_output[:, v, :] / self.student_temp, dim=-1)
+            student_probs = F.log_softmax(
+                student_output[:, v, :] / self.student_temp, dim=-1
+            )
             loss = torch.sum(-teacher_probs * student_probs, dim=-1).mean()
             total_loss += loss
             n_loss_terms += 1
@@ -60,4 +66,6 @@ class DINOLoss(BaseLoss):
         Momentum update for the teacher's output center.
         """
         batch_center = torch.mean(teacher_output, dim=0, keepdim=True)
-        self.center = self.center * self.center_momentum + batch_center * (1 - self.center_momentum)
+        self.center = self.center * self.center_momentum + batch_center * (
+            1 - self.center_momentum
+        )

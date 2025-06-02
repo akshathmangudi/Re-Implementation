@@ -11,7 +11,9 @@ class DINOHead(nn.Module):
     Projection head for DINO as used in the paper.
     """
 
-    def __init__(self, in_dim, out_dim=65536, hidden_dim=2048, bottleneck_dim=256, num_layers=3):
+    def __init__(
+        self, in_dim, out_dim=65536, hidden_dim=2048, bottleneck_dim=256, num_layers=3
+    ):
         super().__init__()
         layers = []
         for i in range(num_layers):
@@ -25,13 +27,16 @@ class DINOHead(nn.Module):
                 layers.append(nn.GELU())
 
         self.mlp = nn.Sequential(*layers)
-        self.last_layer = nn.utils.weight_norm(nn.Linear(bottleneck_dim, out_dim, bias=False))
+        self.last_layer = nn.utils.weight_norm(
+            nn.Linear(bottleneck_dim, out_dim, bias=False)
+        )
         self.last_layer.weight_g.data.fill_(1.0)
 
     def forward(self, x):
         x = self.mlp(x)
         x = F.normalize(self.last_layer(x), dim=-1)
         return x
+
 
 class DINOModel(BaseModel):
     """
@@ -66,5 +71,9 @@ class DINOModel(BaseModel):
         """
         EMA update for teacher parameters.
         """
-        for student_param, teacher_param in zip(self.student_head.parameters(), self.teacher_head.parameters()):
-            teacher_param.data = momentum * teacher_param.data + (1.0 - momentum) * student_param.data
+        for student_param, teacher_param in zip(
+            self.student_head.parameters(), self.teacher_head.parameters()
+        ):
+            teacher_param.data = (
+                momentum * teacher_param.data + (1.0 - momentum) * student_param.data
+            )

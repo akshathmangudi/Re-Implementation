@@ -47,6 +47,7 @@ def positional_embeddings(sequence_length, d):
     embeddings[:, 1::2] = torch.cos(position * div_term)
     return embeddings
 
+
 def visualize_reconstructions(model, test_loader, type, device, num_samples=5):
     """
     Visualize original and reconstructed images
@@ -65,15 +66,17 @@ def visualize_reconstructions(model, test_loader, type, device, num_samples=5):
         data = data.to(device).view(data.size(0), -1)
 
         # Reconstruct images based on autoencoder type
-        if type == 'simple':
+        if type == "simple":
             reconstructed = model(data)
-        elif type == 'regularized':
+        elif type == "regularized":
             reconstructed = model(data)
-        elif type == 'denoising':
-            noisy_data = data * (1 - config.NOISE_FACTOR) + \
-                torch.rand(data.size()).to(device) * config.NOISE_FACTOR
+        elif type == "denoising":
+            noisy_data = (
+                data * (1 - config.NOISE_FACTOR)
+                + torch.rand(data.size()).to(device) * config.NOISE_FACTOR
+            )
             reconstructed = model(noisy_data)
-        elif type == 'vae':
+        elif type == "vae":
             _, reconstructed, _, _ = model(data)
 
         # Prepare for visualization
@@ -85,24 +88,26 @@ def visualize_reconstructions(model, test_loader, type, device, num_samples=5):
         for i in range(num_samples):
             # Original images
             plt.subplot(2, num_samples, i + 1)
-            plt.imshow(data[i], cmap='gray')
-            plt.title('Original')
-            plt.axis('off')
+            plt.imshow(data[i], cmap="gray")
+            plt.title("Original")
+            plt.axis("off")
 
             # Reconstructed images
             plt.subplot(2, num_samples, num_samples + i + 1)
-            plt.imshow(reconstructed[i], cmap='gray')
-            plt.title('Reconstructed')
-            plt.axis('off')
+            plt.imshow(reconstructed[i], cmap="gray")
+            plt.title("Reconstructed")
+            plt.axis("off")
 
         plt.tight_layout()
-        plt.savefig(f'{type}_autoencoder_reconstructions.png')
+        plt.savefig(f"{type}_autoencoder_reconstructions.png")
         plt.close()
+
 
 ## Check these lines
 
 root_dir: Path = Path("/Users/Aksha/github/Re-Implementation/srgan")
 dataset_dir: Path = root_dir / "dataset"
+
 
 def download_dataset(root_dir: Path) -> None:
     if root_dir.exists():
@@ -112,8 +117,7 @@ def download_dataset(root_dir: Path) -> None:
         root_dir.mkdir(parents=True, exist_ok=True)
 
         with open(root_dir / "dataset.zip", "wb") as file:
-            request = requests.get(
-                "https://figshare.com/ndownloader/files/38256855")
+            request = requests.get("https://figshare.com/ndownloader/files/38256855")
             print("Downloading...")
             file.write(request.content)
 
@@ -171,17 +175,22 @@ def delete_dir(dir: Path):
 
 def get_transform(is_hr=True, scale_factor=SCALE_FACTOR):
     if is_hr:
-        return transforms.Compose([
-            transforms.Resize((32 * scale_factor, 32 * scale_factor)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-        ])
+        return transforms.Compose(
+            [
+                transforms.Resize((32 * scale_factor, 32 * scale_factor)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
     else:
-        return transforms.Compose([
-            transforms.Resize((32, 32)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-        ])
+        return transforms.Compose(
+            [
+                transforms.Resize((32, 32)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
+
 
 def find_classes(directory: str) -> Tuple[List[str], Dict[str, int]]:
     """
@@ -200,6 +209,7 @@ def find_classes(directory: str) -> Tuple[List[str], Dict[str, int]]:
     class_to_idx = {class_name: i for i, class_name in enumerate(classes)}
     return classes, class_to_idx
 
+
 def get_2d_sincos_pos_embed(embed_dim, grid_size, cls_token=False):
     """
     Generate 2D sine-cosine positional embeddings.
@@ -215,16 +225,18 @@ def get_2d_sincos_pos_embed(embed_dim, grid_size, cls_token=False):
         pos_embed = np.concatenate([cls_pos, pos_embed], axis=0)
     return torch.tensor(pos_embed, dtype=torch.float32)
 
+
 def get_2d_sincos_pos_embed_from_grid(embed_dim, grid):
     assert embed_dim % 2 == 0
     emb_h = get_1d_sincos_pos_embed(embed_dim // 2, grid[0])
     emb_w = get_1d_sincos_pos_embed(embed_dim // 2, grid[1])
     return np.concatenate([emb_h, emb_w], axis=1)
 
+
 def get_1d_sincos_pos_embed(embed_dim, pos):
     omega = np.arange(embed_dim // 2, dtype=np.float32)
-    omega /= embed_dim / 2.
-    omega = 1. / (10000**omega)
+    omega /= embed_dim / 2.0
+    omega = 1.0 / (10000**omega)
 
     pos = pos.reshape(-1)
     out = np.outer(pos, omega)
@@ -232,6 +244,7 @@ def get_1d_sincos_pos_embed(embed_dim, pos):
     emb_sin = np.sin(out)
     emb_cos = np.cos(out)
     return np.concatenate([emb_sin, emb_cos], axis=1)
+
 
 def random_masking(x, mask_ratio):
     """
@@ -253,13 +266,16 @@ def random_masking(x, mask_ratio):
     ids_restore = torch.argsort(ids_shuffle, dim=1)
 
     ids_keep = ids_shuffle[:, :len_keep]
-    x_masked = torch.gather(x, dim=1, index=ids_keep.unsqueeze(-1).expand(-1, -1, x.shape[2]))
+    x_masked = torch.gather(
+        x, dim=1, index=ids_keep.unsqueeze(-1).expand(-1, -1, x.shape[2])
+    )
 
     mask = torch.ones([B, N], device=x.device)
     mask[:, :len_keep] = 0
     mask = torch.gather(mask, dim=1, index=ids_restore)
 
     return x_masked, mask, ids_restore, ids_keep
+
 
 # src/refrakt_core/utils/augment.py
 
@@ -279,7 +295,9 @@ def random_patch_masking(x, mask_ratio=0.6, patch_size=16):
         masked_x: image with masked patches set to 0
     """
     B, C, H, W = x.shape
-    assert H % patch_size == 0 and W % patch_size == 0, "Image dims must be divisible by patch size"
+    assert (
+        H % patch_size == 0 and W % patch_size == 0
+    ), "Image dims must be divisible by patch size"
 
     num_patches = (H // patch_size) * (W // patch_size)
     num_mask = int(mask_ratio * num_patches)
@@ -290,7 +308,9 @@ def random_patch_masking(x, mask_ratio=0.6, patch_size=16):
         mask = torch.ones(num_patches, device=x.device)
         mask[patch_indices] = 0
         mask = mask.view(H // patch_size, W // patch_size)
-        mask = mask.repeat_interleave(patch_size, dim=0).repeat_interleave(patch_size, dim=1)
+        mask = mask.repeat_interleave(patch_size, dim=0).repeat_interleave(
+            patch_size, dim=1
+        )
         x_masked[i] *= mask.unsqueeze(0)
 
     return x_masked

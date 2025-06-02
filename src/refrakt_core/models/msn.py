@@ -15,9 +15,7 @@ from refrakt_core.registry.model_registry import register_model
 class MSNModel(BaseModel):
     def __init__(self, encoder_name, projector_dim, num_prototypes, pretrained=True):
         super().__init__()
-        self.encoder = create_model(
-            encoder_name, pretrained=pretrained, num_classes=0
-        )
+        self.encoder = create_model(encoder_name, pretrained=pretrained, num_classes=0)
         self.target_encoder = create_model(
             encoder_name, pretrained=False, num_classes=0
         )
@@ -33,7 +31,7 @@ class MSNModel(BaseModel):
             nn.BatchNorm1d(dim),
             nn.ReLU(inplace=True),
             nn.Linear(dim, dim),
-            nn.BatchNorm1d(dim, affine=False)
+            nn.BatchNorm1d(dim, affine=False),
         )
 
         self.target_projector = copy.deepcopy(self.projector)
@@ -51,8 +49,8 @@ class MSNModel(BaseModel):
         Returns:
             z_anchor, z_target, prototypes
         """
-        z_anchor = self.encoder(x_anchor)           # (B, D)
-        z_anchor = self.projector(z_anchor)         # (B, D)
+        z_anchor = self.encoder(x_anchor)  # (B, D)
+        z_anchor = self.projector(z_anchor)  # (B, D)
         z_anchor = F.normalize(z_anchor, dim=-1)
 
         with torch.no_grad():

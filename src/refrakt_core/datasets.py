@@ -18,22 +18,21 @@ class ContrastiveDataset(Dataset):
 
         if self.transform:
             self.transform.transforms = [
-                t for t in self.transform.transforms 
-                if not isinstance(t, nn.Flatten)
+                t for t in self.transform.transforms if not isinstance(t, nn.Flatten)
             ]
-        
+
     def __len__(self):
         return len(self.base_dataset)
-    
+
     def __getitem__(self, idx):
         item = self.base_dataset[idx]
-        
+
         # Handle different dataset formats
         if isinstance(item, tuple) and len(item) >= 2:
             x = item[0]  # Assume first element is image
         else:
             x = item  # Assume single element is image
-            
+
         # Apply transform if available
         if self.transform:
             view1 = self.transform(x)
@@ -41,6 +40,7 @@ class ContrastiveDataset(Dataset):
             return view1, view2
         # Return original image twice if no transform
         return x, x
+
 
 @register_dataset("super_resolution")
 class SuperResolutionDataset(Dataset):
@@ -57,8 +57,8 @@ class SuperResolutionDataset(Dataset):
         fname = self.filenames[idx]
         lr = Image.open(self.lr_dir / fname).convert("RGB")
         hr = Image.open(self.hr_dir / fname).convert("RGB")
-        
+
         if self.transform:
             lr, hr = self.transform(lr, hr)
-        
+
         return {"lr": lr, "hr": hr}

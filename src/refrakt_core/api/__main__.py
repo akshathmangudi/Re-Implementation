@@ -1,38 +1,54 @@
 import argparse
 import os
 
+
 def main():
     parser = argparse.ArgumentParser(description="Refrakt Core Pipeline")
     parser.add_argument("--config", required=True, help="Path to configuration file")
-    parser.add_argument("--mode", choices=["train", "test", "inference", "pipeline"], required=True, help="Pipeline mode")
+    parser.add_argument(
+        "--mode",
+        choices=["train", "test", "inference", "pipeline"],
+        required=True,
+        help="Pipeline mode",
+    )
     parser.add_argument("--log_dir", default="./logs", help="Log directory path")
-    parser.add_argument("--log_type", nargs="*", choices=["tensorboard", "wandb"], default=[], help="Logging integrations")
+    parser.add_argument(
+        "--log_type",
+        nargs="*",
+        choices=["tensorboard", "wandb"],
+        default=[],
+        help="Logging integrations",
+    )
     parser.add_argument("--console", action="store_true", help="Enable console logging")
-    parser.add_argument("--model_path", help="Path to model checkpoint (optional for pipeline)")
-    parser.add_argument("--debug", action="store_true", help="Enable debug logging (e.g., registry prints)")
+    parser.add_argument(
+        "--model_path", help="Path to model checkpoint (optional for pipeline)"
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug logging (e.g., registry prints)",
+    )
     args = parser.parse_args()
 
     # Delay ALL imports until after logger configuration
     from omegaconf import OmegaConf
+
     from refrakt_core.api.core.logger import RefraktLogger
     from refrakt_core.logging import set_global_logger
 
     log_dir = os.path.abspath(args.log_dir)
-    
+
     logger = RefraktLogger(
-        log_dir=log_dir,
-        log_types=args.log_type,
-        console=args.console, 
-        debug=args.debug
+        log_dir=log_dir, log_types=args.log_type, console=args.console, debug=args.debug
     )
-    
+
     logger.info(f"Logging initialized. Log file: {logger.log_file}")
     set_global_logger(logger)
 
     # Now import pipeline components
-    from refrakt_core.api.train import train
-    from refrakt_core.api.test import test
     from refrakt_core.api.inference import inference
+    from refrakt_core.api.test import test
+    from refrakt_core.api.train import train
 
     try:
         if args.mode == "train":
@@ -71,6 +87,7 @@ def main():
 
     finally:
         logger.close()
+
 
 if __name__ == "__main__":
     main()

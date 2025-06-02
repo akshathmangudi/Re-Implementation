@@ -15,7 +15,8 @@ class LayerNormalization(nn.Module):
         mean = x.mean(dim=-1, keepdim=True)
         std = x.std(dim=-1, keepdim=True)
         return self.alpha * (x - mean) / (std + self.eps) + self.bias
-    
+
+
 class MLPHead(nn.Module):
     def __init__(self, in_dim, hidden_dim=2048, out_dim=65536):
         super().__init__()
@@ -37,7 +38,8 @@ class MLPHead(nn.Module):
 
     def forward(self, x):
         return self.net(x)
-    
+
+
 class Merge(nn.Module):
     def __init__(self, C):
         super().__init__()
@@ -52,7 +54,8 @@ class Merge(nn.Module):
         x = self.linear(x)
         x = self.norm(x)
         return x
-    
+
+
 class Projection(nn.Module):
     def __init__(self, d_model: int, vocab_size: int) -> None:
         super().__init__()
@@ -60,6 +63,7 @@ class Projection(nn.Module):
 
     def forward(self, x):
         return torch.log_softmax(self.proj(x), dim=-1)
+
 
 class FeedForward(nn.Module):
     def __init__(self, d_model: int, d_ff: int, dropout: float) -> None:

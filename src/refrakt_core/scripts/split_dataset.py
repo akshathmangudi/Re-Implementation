@@ -16,7 +16,7 @@ def rename_lr_images(lr_dir="../data/DIV2K/LR"):
 
 def split_dataset(hr_dir, lr_dir, output_dir, split_ratio=0.8, seed=42):
     random.seed(seed)
-    
+
     all_files = sorted(os.listdir(hr_dir))
     random.shuffle(all_files)
 
@@ -29,15 +29,16 @@ def split_dataset(hr_dir, lr_dir, output_dir, split_ratio=0.8, seed=42):
         lr_out = Path(output_dir) / phase / "LR"
         hr_out.mkdir(parents=True, exist_ok=True)
         lr_out.mkdir(parents=True, exist_ok=True)
-        
+
         for fname in file_list:
             shutil.copy(Path(hr_dir) / fname, hr_out / fname)
             shutil.copy(Path(lr_dir) / fname, lr_out / fname)
+
 
 if __name__ == "__main__":
     # rename_lr_images()
     split_dataset(
         hr_dir="../data/DIV2K/HR",
         lr_dir="../data/DIV2K/LR",
-        output_dir="../data/DIV2K/"
+        output_dir="../data/DIV2K/",
     )

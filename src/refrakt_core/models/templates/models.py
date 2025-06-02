@@ -162,6 +162,7 @@ class BaseContrastiveModel(BaseModel):
         base.update({"backbone": self.backbone_name, "projection_dim": self.proj_dim})
         return base
 
+
 from abc import abstractmethod
 from typing import Any, Dict
 
@@ -240,8 +241,12 @@ class BaseGAN(BaseModel):
         model_state = {
             "model_name": self.model_name,
             "model_type": self.model_type,
-            "generator_state_dict": self.generator.state_dict() if self.generator else None,
-            "discriminator_state_dict": self.discriminator.state_dict() if self.discriminator else None,
+            "generator_state_dict": (
+                self.generator.state_dict() if self.generator else None
+            ),
+            "discriminator_state_dict": (
+                self.discriminator.state_dict() if self.discriminator else None
+            ),
         }
         torch.save(model_state, path)
         print(f"GAN model saved to {path}")
@@ -254,13 +259,13 @@ class BaseGAN(BaseModel):
             path (str): Path to load the model from.
         """
         checkpoint = torch.load(path, map_location=self.device)
-        
+
         if self.generator and "generator_state_dict" in checkpoint:
             self.generator.load_state_dict(checkpoint["generator_state_dict"])
-            
+
         if self.discriminator and "discriminator_state_dict" in checkpoint:
             self.discriminator.load_state_dict(checkpoint["discriminator_state_dict"])
-            
+
         self.model_name = checkpoint.get("model_name", self.model_name)
         self.model_type = checkpoint.get("model_type", self.model_type)
         print(f"GAN model loaded from {path}")
@@ -272,12 +277,26 @@ class BaseGAN(BaseModel):
         Returns:
             Dict[str, Any]: Model summary information.
         """
-        gen_params = sum(p.numel() for p in self.generator.parameters()) if self.generator else 0
-        gen_trainable = sum(p.numel() for p in self.generator.parameters() if p.requires_grad) if self.generator else 0
-        
-        disc_params = sum(p.numel() for p in self.discriminator.parameters()) if self.discriminator else 0
-        disc_trainable = sum(p.numel() for p in self.discriminator.parameters() if p.requires_grad) if self.discriminator else 0
-        
+        gen_params = (
+            sum(p.numel() for p in self.generator.parameters()) if self.generator else 0
+        )
+        gen_trainable = (
+            sum(p.numel() for p in self.generator.parameters() if p.requires_grad)
+            if self.generator
+            else 0
+        )
+
+        disc_params = (
+            sum(p.numel() for p in self.discriminator.parameters())
+            if self.discriminator
+            else 0
+        )
+        disc_trainable = (
+            sum(p.numel() for p in self.discriminator.parameters() if p.requires_grad)
+            if self.discriminator
+            else 0
+        )
+
         return {
             "model_name": self.model_name,
             "model_type": self.model_type,

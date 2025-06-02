@@ -30,10 +30,14 @@ class MSNLoss(BaseLoss):
         logits_anchor = torch.matmul(z_anchor, prototypes.T) / self.temp_anchor
         logits_target = torch.matmul(z_target, prototypes.T) / self.temp_target
 
-        p_anchor = F.softmax(logits_anchor, dim=-1)           # (BM, K)
-        p_target = F.softmax(logits_target, dim=-1).repeat_interleave(M, dim=0)  # (BM, K)
+        p_anchor = F.softmax(logits_anchor, dim=-1)  # (BM, K)
+        p_target = F.softmax(logits_target, dim=-1).repeat_interleave(
+            M, dim=0
+        )  # (BM, K)
 
-        loss_ce = F.cross_entropy(p_anchor.log(), p_target.detach(), reduction='none').mean()
+        loss_ce = F.cross_entropy(
+            p_anchor.log(), p_target.detach(), reduction="none"
+        ).mean()
 
         p_mean = p_anchor.mean(dim=0)
         entropy = -torch.sum(p_mean * torch.log(p_mean + 1e-6))

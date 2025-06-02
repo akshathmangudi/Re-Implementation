@@ -19,18 +19,18 @@ class AETrainer(BaseTrainer):
         optimizer_args=None,
         device="cuda",
         scheduler=None,
-        **kwargs
+        **kwargs,
     ):
         # Add model_name and save_dir via kwargs
         super().__init__(model, train_loader, val_loader, device, **kwargs)
         self.loss_fn = loss_fn
         self.scheduler = scheduler
-        
+
         if optimizer_args is None:
             optimizer_args = {"lr": 1e-3}
-            
+
         self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
-        
+
     def train(self, num_epochs):
         for epoch in range(num_epochs):
             self.model.train()
@@ -72,7 +72,7 @@ class AETrainer(BaseTrainer):
 
                 inputs = inputs.to(self.device)
                 raw_outputs = self.model(inputs)
-                
+
                 loss = self.loss_fn(raw_outputs, inputs)
                 total_loss += loss.item()
 

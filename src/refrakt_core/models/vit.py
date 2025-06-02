@@ -25,14 +25,16 @@ class VisionTransformer(BaseClassifier):
         super(VisionTransformer, self).__init__(
             num_classes=num_classes, model_name=model_name
         )
-        
-        assert image_size % patch_size == 0, "Image size must be divisible by patch size"
+
+        assert (
+            image_size % patch_size == 0
+        ), "Image size must be divisible by patch size"
         self.n_patches = image_size // patch_size
         self.patch_size = patch_size
         self.hidden_d = dim
-        
+
         self.input_d = in_channels * patch_size * patch_size
-        
+
         self.linear_mapper = nn.Linear(self.input_d, dim)
         self.v_class = nn.Parameter(torch.rand(1, dim))
         self.register_buffer(
@@ -41,9 +43,7 @@ class VisionTransformer(BaseClassifier):
             persistent=False,
         )
 
-        self.blocks = nn.ModuleList(
-            [ViTResidual(dim, heads) for _ in range(depth)]
-        )
+        self.blocks = nn.ModuleList([ViTResidual(dim, heads) for _ in range(depth)])
 
         self.mlp_head = nn.Sequential(nn.Linear(dim, num_classes))
 
@@ -62,6 +62,6 @@ class VisionTransformer(BaseClassifier):
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         cls_token = self.forward_features(images)
         return self.mlp_head(cls_token)
-    
+
     def features(self, images: torch.Tensor) -> torch.Tensor:
         return self.forward_features(images)

@@ -22,5 +22,5 @@ def build_scheduler(cfg: OmegaConf, optimizer: Any) -> Optional[Any]:
         scheduler_params = cfg.scheduler.params or {}
         scheduler = scheduler_cls(optimizer, **scheduler_params)
         print(f"Scheduler: {cfg.scheduler.name} with params: {scheduler_params}")
-    
+
     return scheduler

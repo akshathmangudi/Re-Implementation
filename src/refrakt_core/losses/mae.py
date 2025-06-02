@@ -1,7 +1,6 @@
 import torch
 
-from refrakt_core.losses.templates.base import \
-    BaseLoss  # adjust import path if needed
+from refrakt_core.losses.templates.base import BaseLoss  # adjust import path if needed
 from refrakt_core.registry.loss_registry import register_loss
 
 
@@ -42,9 +41,7 @@ class MAELoss(BaseLoss):
 
     def get_config(self):
         config = super().get_config()
-        config.update({
-            "normalize_target": self.normalize_target
-        })
+        config.update({"normalize_target": self.normalize_target})
         return config
 
     def extra_repr(self):

@@ -11,6 +11,7 @@ class PerceptualLoss(BaseLoss):
     Perceptual Loss using a pre-trained VGG19 network.
     Computes the MSE loss between the feature maps of the predicted and target images.
     """
+
     def __init__(self, device="cuda"):
         super().__init__(name="PerceptualLoss")
         vgg = vgg19(pretrained=True).features[:36].to(device).eval()

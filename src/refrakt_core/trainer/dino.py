@@ -19,11 +19,11 @@ class DINOTrainer(BaseTrainer):
         optimizer_args=None,
         scheduler=None,
         device="cuda",
-        **kwargs
+        **kwargs,
     ):
         # Add model_name and save_dir via kwargs
         super().__init__(model, train_loader, val_loader, device, **kwargs)
-        
+
         if loss_fn is None:
             raise ValueError("loss_fn is required for DINOTrainer")
         self.loss_fn = loss_fn
@@ -35,32 +35,36 @@ class DINOTrainer(BaseTrainer):
 
         self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
         self.scheduler = scheduler
-        self.scaler = GradScaler(enabled=(self.device.type == 'cuda'))
+        self.scaler = GradScaler(enabled=(self.device.type == "cuda"))
 
     def _unpack_views(self, batch):
         # Handle default collate format for contrastive learning
         if isinstance(batch, (tuple, list)) and len(batch) == 2:
             if all(isinstance(b, torch.Tensor) for b in batch):
                 # Default collate format: (view1_batch, view2_batch)
-                return [batch[0].to(self.device).float(),
-                        batch[1].to(self.device).float()]
-        
+                return [
+                    batch[0].to(self.device).float(),
+                    batch[1].to(self.device).float(),
+                ]
+
         # Original handling for other formats
         if isinstance(batch, torch.Tensor):
             if batch.ndim == 5 and batch.size(1) == 2:
-                return [batch[:, 0].to(self.device).float(),
-                        batch[:, 1].to(self.device).float()]
+                return [
+                    batch[:, 0].to(self.device).float(),
+                    batch[:, 1].to(self.device).float(),
+                ]
             else:
                 raise ValueError(f"Unexpected tensor batch shape: {batch.shape}")
         elif isinstance(batch, dict):
             return [
                 batch["view1"].to(self.device).float(),
-                batch["view2"].to(self.device).float()
+                batch["view2"].to(self.device).float(),
             ]
         elif isinstance(batch, (list, tuple)):
             view1_batch = []
             view2_batch = []
-            
+
             for item in batch:
                 if isinstance(item, (tuple, list)):
                     view1_batch.append(item[0])
@@ -70,14 +74,13 @@ class DINOTrainer(BaseTrainer):
                     view2_batch.append(item["view2"])
                 else:
                     raise TypeError(f"Unexpected batch item type: {type(item)}")
-                    
+
             return [
                 torch.stack(view1_batch).to(self.device).float(),
-                torch.stack(view2_batch).to(self.device).float()
+                torch.stack(view2_batch).to(self.device).float(),
             ]
         else:
             raise ValueError(f"Unexpected batch type: {type(batch)}")
-
 
     def train(self, num_epochs):
         best_accuracy = 0.0
@@ -85,7 +88,9 @@ class DINOTrainer(BaseTrainer):
             self.model.train()
             total_loss = 0.0
 
-            loop = tqdm(self.train_loader, desc=f"Epoch {epoch+1}/{num_epochs}", leave=True)
+            loop = tqdm(
+                self.train_loader, desc=f"Epoch {epoch+1}/{num_epochs}", leave=True
+            )
 
             for batch in loop:
                 try:
@@ -119,14 +124,12 @@ class DINOTrainer(BaseTrainer):
                 best_accuracy = current_accuracy
                 self.save(suffix="best_model")
                 print(f"New best model saved with accuracy: {best_accuracy * 100:.2f}%")
-            
+
             # Always save the latest model
             self.save(suffix="latest")
 
             avg_loss = total_loss / len(self.train_loader)
             print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}")
-        
-        
 
     def evaluate(self):
         if self.val_loader is None:

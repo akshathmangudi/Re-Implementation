@@ -9,6 +9,7 @@ class CrossEntropyLoss(BaseLoss):
     """
     Cross-Entropy Loss with optional label smoothing.
     """
+
     def __init__(self, weight=None, label_smoothing=0.0, device="cuda"):
         super().__init__(name="CrossEntropyLoss")
         self.loss = nn.CrossEntropyLoss(weight=weight, label_smoothing=label_smoothing)
@@ -30,9 +31,10 @@ class CrossEntropyLoss(BaseLoss):
         if target.ndim != 1:
             raise ValueError(f"Expected target to have shape (N,), got {target.shape}")
         if pred.shape[0] != target.shape[0]:
-            raise ValueError(f"Batch size mismatch: {pred.shape[0]} vs {target.shape[0]}")
+            raise ValueError(
+                f"Batch size mismatch: {pred.shape[0]} vs {target.shape[0]}"
+            )
         return self.loss(pred, target)
-
 
     def get_config(self):
         """

@@ -11,6 +11,7 @@ class GANLoss(BaseLoss):
     GAN Loss for adversarial training.
     Supports both BCE and LSGAN loss.
     """
+
     def __init__(self, use_lsgan=False, device="cuda"):
         super().__init__(name="GANLoss")
         self.loss = nn.MSELoss() if use_lsgan else nn.BCEWithLogitsLoss()

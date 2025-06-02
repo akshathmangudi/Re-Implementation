@@ -15,7 +15,9 @@ class PairedTransform:
 
     def __call__(self, lr, hr):
         # Random crop
-        i, j, h, w = T.RandomCrop.get_params(hr, output_size=(self.crop_size * 4, self.crop_size * 4))
+        i, j, h, w = T.RandomCrop.get_params(
+            hr, output_size=(self.crop_size * 4, self.crop_size * 4)
+        )
         hr = T.functional.crop(hr, i, j, h, w)
         lr = T.functional.crop(lr, i // 4, j // 4, h // 4, w // 4)
 
@@ -30,11 +32,13 @@ class PairedTransform:
 
         return lr, hr
 
+
 @register_transform("flatten")
 class FlattenTransform:
     def __call__(self, x):
         return torch.flatten(x)
-    
+
+
 @register_transform("patchify")
 class PatchifyTransform:
     def __init__(self, patch_size):

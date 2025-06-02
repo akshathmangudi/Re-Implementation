@@ -14,6 +14,7 @@ class DINOBackboneWrapper(nn.Module):
     def forward(self, x):
         return self.backbone(x, return_features=True)
 
+
 @register_model("dino")
 class DINOModelWrapper(DINOModel):
     def __init__(self, backbone="resnet18", out_dim=65536):
@@ -31,7 +32,9 @@ class DINOModelWrapper(DINOModel):
         elif isinstance(backbone, nn.Module):
             backbone_instance = backbone
         else:
-            raise TypeError(f"Expected backbone to be str or nn.Module, got {type(backbone)}")
+            raise TypeError(
+                f"Expected backbone to be str or nn.Module, got {type(backbone)}"
+            )
 
         wrapped = DINOBackboneWrapper(backbone_instance)
         super().__init__(backbone=wrapped, model_name="dino", out_dim=out_dim)

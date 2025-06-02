@@ -12,17 +12,17 @@ from refrakt_core.utils.classes.srgan import Discriminator, Generator
 class SRGAN(BaseGAN):
     """
     Super-Resolution Generative Adversarial Network (SRGAN).
-    
+
     This model combines a generator and discriminator to perform
     super-resolution tasks on images.
-    
+
     Inherits from BaseGAN to maintain consistent architecture with other models.
     """
-    
+
     def __init__(self, scale_factor=4, model_name="srgan"):
         """
         Initialize the SRGAN model.
-        
+
         Args:
             scale_factor (int): The upscaling factor for super-resolution. Defaults to 4.
             model_name (str): Model name. Defaults to "srgan".
@@ -55,20 +55,15 @@ class SRGAN(BaseGAN):
         d_loss.backward()
         optimizer["discriminator"].step()
 
-        return {
-            "g_loss": g_loss.item(),
-            "d_loss": d_loss.item()
-        }
+        return {"g_loss": g_loss.item(), "d_loss": d_loss.item()}
 
-
-    
     def generate(self, input_data):
         """
         Generate a super-resolution image from a low-resolution input.
-        
+
         Args:
             input_data (torch.Tensor): Low-resolution input image.
-            
+
         Returns:
             torch.Tensor: Super-resolution output image.
         """
@@ -77,14 +72,14 @@ class SRGAN(BaseGAN):
             if input_data.device != self.device:
                 input_data = input_data.to(self.device)
             return self.generator(input_data)
-    
+
     def discriminate(self, input_data):
         """
         Discriminate between real and fake images.
-        
+
         Args:
             input_data (torch.Tensor): Input image.
-            
+
         Returns:
             torch.Tensor: Probability that the input is a real image.
         """
@@ -93,25 +88,27 @@ class SRGAN(BaseGAN):
             if input_data.device != self.device:
                 input_data = input_data.to(self.device)
             return self.discriminator(input_data)
-    
+
     def summary(self):
         """
         Get a summary of the SRGAN model including additional SR-specific information.
-        
+
         Returns:
             dict: Model summary information.
         """
         base_summary = super().summary()
         # Add SR-specific information
-        base_summary.update({
-            "scale_factor": self.scale_factor,
-        })
+        base_summary.update(
+            {
+                "scale_factor": self.scale_factor,
+            }
+        )
         return base_summary
-    
+
     def save_model(self, path):
         """
         Save model weights to disk with SR-specific attributes.
-        
+
         Args:
             path (str): Path to save the model.
         """
@@ -124,11 +121,11 @@ class SRGAN(BaseGAN):
         }
         torch.save(model_state, path)
         print(f"SRGAN model saved to {path}")
-    
+
     def load_model(self, path):
         """
         Load model weights from disk including SR-specific attributes.
-        
+
         Args:
             path (str): Path to load the model from.
         """

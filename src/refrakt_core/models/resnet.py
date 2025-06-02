@@ -26,7 +26,6 @@ class ResNet(BaseClassifier):
         self.projection = nn.Identity()  # Default identity unless overridden
         self.fc = nn.Linear(self.feature_dim, num_classes)
 
-
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
         if stride != 1 or self.inplanes != planes:
@@ -51,12 +50,13 @@ class ResNet(BaseClassifier):
 
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
-        
+
         if return_features:
             return x
 
         x = self.fc(x)
         return x
+
 
 @register_model("resnet18")
 class ResNet18(ResNet):
@@ -65,7 +65,7 @@ class ResNet18(ResNet):
             block=ResidualBlock,
             layers=[2, 2, 2, 2],
             in_channels=in_channels,
-            num_classes=num_classes
+            num_classes=num_classes,
         )
 
 
@@ -73,11 +73,12 @@ class ResNet18(ResNet):
 class ResNet50(ResNet):
     def __init__(self, in_channels=3, num_classes=10):
         super().__init__(
-            block=BottleneckBlock, 
+            block=BottleneckBlock,
             layers=[3, 4, 6, 3],
             in_channels=in_channels,
-            num_classes=num_classes
+            num_classes=num_classes,
         )
+
 
 @register_model("resnet101")
 class ResNet101(ResNet):
@@ -86,8 +87,9 @@ class ResNet101(ResNet):
             block=BottleneckBlock,
             layers=[3, 4, 23, 3],
             in_channels=in_channels,
-            num_classes=num_classes
+            num_classes=num_classes,
         )
+
 
 @register_model("resnet152")
 class ResNet152(ResNet):
@@ -96,5 +98,5 @@ class ResNet152(ResNet):
             block=BottleneckBlock,
             layers=[3, 8, 36, 3],
             in_channels=in_channels,
-            num_classes=num_classes
+            num_classes=num_classes,
         )

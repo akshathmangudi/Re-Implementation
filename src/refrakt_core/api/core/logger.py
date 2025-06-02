@@ -1,7 +1,8 @@
-import os
 import logging
+import os
 import sys
 from typing import List, Optional
+
 
 class RefraktLogger:
     def __init__(
@@ -9,8 +10,8 @@ class RefraktLogger:
         log_dir: str,
         log_file: str = "refrakt.log",
         log_types: Optional[List[str]] = None,
-        console: bool = False, 
-        debug: bool = False
+        console: bool = False,
+        debug: bool = False,
     ):
         self.log_dir = os.path.abspath(log_dir)  # Ensure absolute path
         os.makedirs(self.log_dir, exist_ok=True)
@@ -20,15 +21,15 @@ class RefraktLogger:
         self.wandb_run = None
         self.tb_writer = None
         self.debug_enabled = debug
-        
+
         self.logger = logging.getLogger("refrakt")
         level = logging.DEBUG if debug else logging.INFO
         self.logger.setLevel(level)
-        
+
         # KEY FIX: Only configure handlers if none exist
         if not self.logger.hasHandlers():
             self._setup_handlers(level)
-        
+
         # CRITICAL FIX: Prevent propagation to root logger
         self.logger.propagate = False
 
@@ -43,22 +44,25 @@ class RefraktLogger:
         # Clear any existing handlers (just in case)
         for handler in self.logger.handlers[:]:
             self.logger.removeHandler(handler)
-            
+
         # File handler
         file_handler = logging.FileHandler(self.log_file)
         file_handler.setLevel(level)
-        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        file_handler.setFormatter(
+            logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        )
         self.logger.addHandler(file_handler)
 
         if self.console:
             console_handler = logging.StreamHandler(sys.stdout)
             console_handler.setLevel(level)
-            console_handler.setFormatter(logging.Formatter('%(message)s'))
+            console_handler.setFormatter(logging.Formatter("%(message)s"))
             self.logger.addHandler(console_handler)
 
     def _setup_wandb(self):
         try:
             import wandb
+
             self.wandb_run = wandb.init(project="refrakt", dir=self.log_dir)
             self.info("Weights & Biases initialized")
         except ImportError:
@@ -69,6 +73,7 @@ class RefraktLogger:
     def _setup_tensorboard(self):
         try:
             from torch.utils.tensorboard import SummaryWriter
+
             tb_dir = os.path.join(self.log_dir, "tensorboard")
             os.makedirs(tb_dir, exist_ok=True)
             print(f"[DEBUG] Creating SummaryWriter at {tb_dir}")
@@ -76,7 +81,6 @@ class RefraktLogger:
             self.info(f"TensorBoard initialized at {tb_dir}")
         except Exception as e:
             self.error(f"TensorBoard initialization failed: {str(e)}")
-
 
     def log_metrics(self, metrics: dict, step: int):
         if self.tb_writer:
@@ -88,10 +92,10 @@ class RefraktLogger:
     def log_config(self, config: dict):
         if self.wandb_run:
             self.wandb_run.config.update(config)
-        
+
         if self.tb_writer:
             from torch.utils.tensorboard.summary import hparams
-            
+
             try:
                 filtered_config = flatten_and_filter_config(config)
                 exp, ssi, sei = hparams(filtered_config, {})
@@ -101,7 +105,6 @@ class RefraktLogger:
                 self.info("Logged filtered config to TensorBoard hparams")
             except Exception as e:
                 self.error(f"Failed to log hparams to TensorBoard: {str(e)}")
-
 
     def info(self, msg: str):
         self.logger.info(msg)
@@ -121,7 +124,7 @@ class RefraktLogger:
         for handler in self.logger.handlers[:]:
             handler.close()
             self.logger.removeHandler(handler)
-            
+
         if self.tb_writer:
             self.tb_writer.close()
         if self.wandb_run:

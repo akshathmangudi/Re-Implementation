@@ -21,7 +21,7 @@ class SimCLRModel(BaseContrastiveModel):
             nn.ReLU(),
             nn.Linear(2048, proj_dim, bias=False),
         )
-        
+
     def training_step(self, batch, optimizer, loss_fn, device):
         """Contrastive training step"""
         x_i, x_j = batch

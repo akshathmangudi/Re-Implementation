@@ -19,20 +19,20 @@ class MSNTrainer(BaseTrainer):
         optimizer_args=None,
         device="cpu",
         scheduler=None,
-        **kwargs
+        **kwargs,
     ):
         # Add model_name and save_dir via kwargs
         super().__init__(model, train_loader, val_loader, device, **kwargs)
-        
+
         self.loss_fn = loss_fn
         self.scheduler = scheduler
-        self.ema_base = kwargs.pop('ema_base', 0.996)
-        self.grad_clip = kwargs.pop('grad_clip', None)
-        
+        self.ema_base = kwargs.pop("ema_base", 0.996)
+        self.grad_clip = kwargs.pop("grad_clip", None)
+
         if optimizer_args is None:
             optimizer_args = {}
         self.optimizer = optimizer_cls(model.parameters(), **optimizer_args)
-        
+
         self.global_step = 0
 
     def update_ema(self, momentum):
@@ -70,7 +70,9 @@ class MSNTrainer(BaseTrainer):
                 self.optimizer.step()
 
                 # EMA update
-                momentum = self.ema_base + (1 - self.ema_base) * (self.global_step / 10000)
+                momentum = self.ema_base + (1 - self.ema_base) * (
+                    self.global_step / 10000
+                )
                 self.update_ema(momentum)
 
                 self.global_step += 1
@@ -82,5 +84,7 @@ class MSNTrainer(BaseTrainer):
 
     def evaluate(self):
         # Implement basic evaluation if needed
-        print("[MSNTrainer] Evaluation not implemented for self-supervised pretraining.")
+        print(
+            "[MSNTrainer] Evaluation not implemented for self-supervised pretraining."
+        )
         return 0.0  # Return float for consistency

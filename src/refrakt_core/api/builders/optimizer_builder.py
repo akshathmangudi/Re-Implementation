@@ -23,10 +23,12 @@ def build_optimizer(cfg: OmegaConf, model: Any) -> Union[Any, Dict[str, Any]]:
                 opt_name = comp_cfg["name"]
                 opt_cls = opt_map.get(opt_name.lower())
                 if not opt_cls:
-                    raise ValueError(f"Unsupported optimizer for {comp_name}: {opt_name}")
-                
+                    raise ValueError(
+                        f"Unsupported optimizer for {comp_name}: {opt_name}"
+                    )
+
                 opt_params = comp_cfg.get("params", {})
-                
+
                 # Get parameters for specific component
                 if comp_name == "generator":
                     parameters = model.generator.parameters()
@@ -34,10 +36,10 @@ def build_optimizer(cfg: OmegaConf, model: Any) -> Union[Any, Dict[str, Any]]:
                     parameters = model.discriminator.parameters()
                 else:
                     raise ValueError(f"Unknown optimizer component: {comp_name}")
-                
+
                 optimizer[comp_name] = opt_cls(parameters, **opt_params)
                 print(f"Optimizer ({comp_name}): {opt_name} with params: {opt_params}")
-            
+
     elif cfg.optimizer.get("components"):
         # Handle multi-component optimizer (GAN)
         optimizer = {}
@@ -46,9 +48,9 @@ def build_optimizer(cfg: OmegaConf, model: Any) -> Union[Any, Dict[str, Any]]:
             opt_cls = opt_map.get(opt_name.lower())
             if not opt_cls:
                 raise ValueError(f"Unsupported optimizer for {comp_name}: {opt_name}")
-            
+
             opt_params = comp_cfg.get("params", {})
-            
+
             # Get parameters for specific component
             if comp_name == "generator":
                 parameters = model.generator.parameters()
@@ -56,7 +58,7 @@ def build_optimizer(cfg: OmegaConf, model: Any) -> Union[Any, Dict[str, Any]]:
                 parameters = model.discriminator.parameters()
             else:
                 raise ValueError(f"Unknown optimizer component: {comp_name}")
-            
+
             optimizer[comp_name] = opt_cls(parameters, **opt_params)
             print(f"Optimizer ({comp_name}): {opt_name} with params: {opt_params}")
     else:
@@ -64,7 +66,7 @@ def build_optimizer(cfg: OmegaConf, model: Any) -> Union[Any, Dict[str, Any]]:
         opt_cls = opt_map.get(cfg.optimizer.name.lower())
         if not opt_cls:
             raise ValueError(f"Unsupported optimizer: {cfg.optimizer.name}")
-        
+
         optimizer_params = cfg.optimizer.params or {}
         optimizer = opt_cls(model.parameters(), **optimizer_params)
         print(f"Optimizer: {cfg.optimizer.name} with params: {optimizer_params}")

@@ -1,14 +1,12 @@
 import gc
 import os
 import sys
+import traceback
 from pathlib import Path
 from typing import Optional
 
 import torch
 from omegaconf import OmegaConf
-
-import traceback
-
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.resolve()
@@ -17,15 +15,18 @@ gc.collect()
 torch.cuda.empty_cache()
 
 from refrakt_core.api.builders.dataloader_builder import build_dataloader
+
 # Import new builders
 from refrakt_core.api.builders.dataset_builder import build_dataset
-from refrakt_core.logging import get_global_logger
 from refrakt_core.api.core.logger import RefraktLogger
+from refrakt_core.logging import get_global_logger
 
 
-def train(config_path: str, 
-        model_path: Optional[str] = None, 
-        logger: Optional[RefraktLogger] = None):
+def train(
+    config_path: str,
+    model_path: Optional[str] = None,
+    logger: Optional[RefraktLogger] = None,
+):
 
     import refrakt_core.datasets
     import refrakt_core.losses
@@ -36,13 +37,13 @@ def train(config_path: str,
     from refrakt_core.registry.model_registry import get_model
     from refrakt_core.registry.trainer_registry import get_trainer
 
-    if logger is None:  
-            logger = get_global_logger()
+    if logger is None:
+        logger = get_global_logger()
 
     try:
         # Load configuration
         cfg = OmegaConf.load(config_path)
-        
+
         if logger:
             logger.log_config(OmegaConf.to_container(cfg, resolve=True))
 
@@ -54,13 +55,17 @@ def train(config_path: str,
         logger.info("Building datasets...")
         train_dataset = build_dataset(cfg.dataset)
         # For validation, use same dataset config but with train=False
-        val_cfg = OmegaConf.merge(cfg.dataset, OmegaConf.create({"params": {"train": False}}))
+        val_cfg = OmegaConf.merge(
+            cfg.dataset, OmegaConf.create({"params": {"train": False}})
+        )
         val_dataset = build_dataset(val_cfg)
-        
+
         logger.info("Building data loaders...")
         train_loader = build_dataloader(train_dataset, cfg.dataloader)
         val_loader = build_dataloader(val_dataset, cfg.dataloader)
-        logger.info(f"Train batches: {len(train_loader)}, Val batches: {len(val_loader)}")
+        logger.info(
+            f"Train batches: {len(train_loader)}, Val batches: {len(val_loader)}"
+        )
 
         # === Model ===
         logger.info("Building model...")
@@ -79,7 +84,9 @@ def train(config_path: str,
                     loss_name = comp_cfg["name"]
                     loss_params = comp_cfg.get("params", {})
                     loss_fn[comp_name] = get_loss(loss_name, **loss_params).to(device)
-                    logger.info(f"Loss ({comp_name}): {loss_name} with params: {loss_params}")
+                    logger.info(
+                        f"Loss ({comp_name}): {loss_name} with params: {loss_params}"
+                    )
         elif cfg.loss.get("components"):
             # Handle multi-component loss with explicit 'components' key
             loss_fn = {}
@@ -87,14 +94,16 @@ def train(config_path: str,
                 loss_name = comp_cfg["name"]
                 loss_params = comp_cfg.get("params", {})
                 loss_fn[comp_name] = get_loss(loss_name, **loss_params).to(device)
-                logger.info(f"Loss ({comp_name}): {loss_name} with params: {loss_params}")
+                logger.info(
+                    f"Loss ({comp_name}): {loss_name} with params: {loss_params}"
+                )
         else:
             # Standard single loss
             loss_name = cfg.loss.name
             loss_params = cfg.loss.get("params", {})
             loss_fn = get_loss(loss_name, **loss_params).to(device)
             logger.info(f"Loss: {loss_name} with params: {loss_params}")
-        
+
         # === Optimizer (updated for GAN support) ===
         logger.info("Building optimizer...")
         opt_map = {
@@ -113,10 +122,12 @@ def train(config_path: str,
                     opt_name = comp_cfg["name"]
                     opt_cls = opt_map.get(opt_name.lower())
                     if not opt_cls:
-                        raise ValueError(f"Unsupported optimizer for {comp_name}: {opt_name}")
-                    
+                        raise ValueError(
+                            f"Unsupported optimizer for {comp_name}: {opt_name}"
+                        )
+
                     opt_params = comp_cfg.get("params", {})
-                    
+
                     # Get parameters for specific component
                     if comp_name == "generator":
                         parameters = model.generator.parameters()
@@ -124,10 +135,12 @@ def train(config_path: str,
                         parameters = model.discriminator.parameters()
                     else:
                         raise ValueError(f"Unknown optimizer component: {comp_name}")
-                    
+
                     optimizer[comp_name] = opt_cls(parameters, **opt_params)
-                    logger.info(f"Optimizer ({comp_name}): {opt_name} with params: {opt_params}")
-                
+                    logger.info(
+                        f"Optimizer ({comp_name}): {opt_name} with params: {opt_params}"
+                    )
+
         elif cfg.optimizer.get("components"):
             # Handle multi-component optimizer (GAN)
             optimizer = {}
@@ -135,10 +148,12 @@ def train(config_path: str,
                 opt_name = comp_cfg["name"]
                 opt_cls = opt_map.get(opt_name.lower())
                 if not opt_cls:
-                    raise ValueError(f"Unsupported optimizer for {comp_name}: {opt_name}")
-                
+                    raise ValueError(
+                        f"Unsupported optimizer for {comp_name}: {opt_name}"
+                    )
+
                 opt_params = comp_cfg.get("params", {})
-                
+
                 # Get parameters for specific component
                 if comp_name == "generator":
                     parameters = model.generator.parameters()
@@ -146,18 +161,22 @@ def train(config_path: str,
                     parameters = model.discriminator.parameters()
                 else:
                     raise ValueError(f"Unknown optimizer component: {comp_name}")
-                
+
                 optimizer[comp_name] = opt_cls(parameters, **opt_params)
-                logger.info(f"Optimizer ({comp_name}): {opt_name} with params: {opt_params}")
+                logger.info(
+                    f"Optimizer ({comp_name}): {opt_name} with params: {opt_params}"
+                )
         else:
             # Standard single optimizer (VAE, AE, etc.)
             opt_cls = opt_map.get(cfg.optimizer.name.lower())
             if not opt_cls:
                 raise ValueError(f"Unsupported optimizer: {cfg.optimizer.name}")
-            
+
             optimizer_params = cfg.optimizer.params or {}
             optimizer = opt_cls(model.parameters(), **optimizer_params)
-            logger.info(f"Optimizer: {cfg.optimizer.name} with params: {optimizer_params}")
+            logger.info(
+                f"Optimizer: {cfg.optimizer.name} with params: {optimizer_params}"
+            )
 
         # === Scheduler ===
         scheduler = None
@@ -175,12 +194,18 @@ def train(config_path: str,
 
             scheduler_params = cfg.scheduler.params or {}
             scheduler = scheduler_cls(optimizer, **scheduler_params)
-            logger.info(f"Scheduler: {cfg.scheduler.name} with params: {scheduler_params}")
+            logger.info(
+                f"Scheduler: {cfg.scheduler.name} with params: {scheduler_params}"
+            )
 
         # === Trainer Initialization ===
         logger.info("Initializing trainer...")
         trainer_cls = get_trainer(cfg.trainer.name)
-        trainer_params = OmegaConf.to_container(cfg.trainer.params, resolve=True) if cfg.trainer.params else {}
+        trainer_params = (
+            OmegaConf.to_container(cfg.trainer.params, resolve=True)
+            if cfg.trainer.params
+            else {}
+        )
 
         # Extract special parameters
         num_epochs = trainer_params.pop("num_epochs", 1)
@@ -199,7 +224,7 @@ def train(config_path: str,
                 optimizer_args=optimizer_params,  # Pass optimizer arguments
                 device=final_device,
                 scheduler=scheduler,
-                **trainer_params
+                **trainer_params,
             )
         else:
             # For other trainers (GAN, etc.), pass optimizer instance or dict
@@ -211,16 +236,18 @@ def train(config_path: str,
                 optimizer=optimizer,  # Pass optimizer instance/dict
                 device=final_device,
                 scheduler=scheduler,
-                **trainer_params
+                **trainer_params,
             )
 
         # === Training ===
-        logger.info(f"\nStarting training for {num_epochs} epochs...")  # Use extracted num_epochs
+        logger.info(
+            f"\nStarting training for {num_epochs} epochs..."
+        )  # Use extracted num_epochs
         trainer.train(num_epochs=num_epochs)
 
         logger.info("Saving model now...")
         trainer.save(path=model_path)
-        
+
         logger.info("\nTraining completed successfully!")
 
     except Exception as e:

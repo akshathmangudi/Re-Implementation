@@ -10,9 +10,10 @@ from refrakt_core.utils.methods import find_classes
 
 class CreateDataset(Dataset):
     """
-    This dataset class was created as described by the documentation 
-    provided by PyTorch. Most of the details here are explanatory. 
+    This dataset class was created as described by the documentation
+    provided by PyTorch. Most of the details here are explanatory.
     """
+
     def __init__(self, target_dir: str, transform=None) -> None:
         self.paths = list(Path(target_dir).glob("*/*.jpg"))
         self.transform = transform

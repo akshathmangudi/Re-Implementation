@@ -51,13 +51,13 @@ class AutoEncoder(BaseAutoEncoder):
         std = torch.exp(0.5 * sigma)
         eps = torch.randn_like(std)
         return mu + eps * std
-    
+
     def training_step(self, batch, optimizer, loss_fn, device):
         inputs = batch[0].to(device)
         optimizer.zero_grad()
 
         output = self(inputs)
-        
+
         if self.type == "vae":
             recon, mu, sigma = output
             # Use custom VAE loss (MSE + KL divergence)
@@ -73,7 +73,6 @@ class AutoEncoder(BaseAutoEncoder):
 
         return {"loss": loss.item()}
 
-
     def validation_step(self, batch, loss_fn, device):
         inputs = batch[0].to(device)
         output = self(inputs)
@@ -88,7 +87,7 @@ class AutoEncoder(BaseAutoEncoder):
             loss = loss_fn(recon, inputs)
 
         return {"val_loss": loss.item()}
-    
+
     def forward(self, x):
         if self.type in {"simple", "regularized"}:
             encoded = self.encode(x)
@@ -101,7 +100,7 @@ class AutoEncoder(BaseAutoEncoder):
             return {
                 "recon": decoded,
                 "mu": mu,
-                "logvar": torch.log(sigma.pow(2))  # Convert sigma to logvar
+                "logvar": torch.log(sigma.pow(2)),  # Convert sigma to logvar
             }
         else:
             raise ValueError(f"Unknown autoencoder type: {self.type}")

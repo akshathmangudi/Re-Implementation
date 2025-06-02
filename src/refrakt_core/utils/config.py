@@ -1,4 +1,4 @@
-DEVICE = 'cuda'
+DEVICE = "cuda"
 DATASET_ROOT = "./data"
 INPUT_DIM = 784
 LEARNING_RATE = 1e-3

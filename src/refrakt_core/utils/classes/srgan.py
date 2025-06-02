@@ -10,12 +10,15 @@ class UpsampleBlock(nn.Module):
     """
     Optimized upsampling block using ConvTranspose2d.
     """
+
     def __init__(self, in_channels, out_channels, scale_factor=2):
         super(UpsampleBlock, self).__init__()
         self.upsample = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels * scale_factor ** 2, kernel_size=3, padding=1),
+            nn.Conv2d(
+                in_channels, out_channels * scale_factor**2, kernel_size=3, padding=1
+            ),
             nn.PixelShuffle(scale_factor),
-            nn.PReLU()
+            nn.PReLU(),
         )
 
     def forward(self, x):
@@ -27,9 +30,10 @@ class SRResidualBlock(ResidualBlock):
     A modified version of ResidualBlock specifically for Super Resolution.
     Inherits from the base ResidualBlock but adapts it for SR requirements.
     """
+
     def __init__(self, channels):
         nn.Module.__init__(self)
-        
+
         self.conv1 = nn.Conv2d(channels, channels, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(channels)
         # Use PReLU instead of ReLU for better gradient flow in generator

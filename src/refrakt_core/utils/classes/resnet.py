@@ -31,7 +31,7 @@ class ResidualBlock(nn.Module):
         out += residual
         out = self.relu(out)
         return out
-    
+
 
 class BottleneckBlock(nn.Module):
     expansion = 4
@@ -44,12 +44,16 @@ class BottleneckBlock(nn.Module):
             nn.ReLU(),
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=stride, padding=1),
+            nn.Conv2d(
+                out_channels, out_channels, kernel_size=3, stride=stride, padding=1
+            ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
         )
         self.conv3 = nn.Sequential(
-            nn.Conv2d(out_channels, out_channels * self.expansion, kernel_size=1, stride=1),
+            nn.Conv2d(
+                out_channels, out_channels * self.expansion, kernel_size=1, stride=1
+            ),
             nn.BatchNorm2d(out_channels * self.expansion),
         )
         self.downsample = downsample
@@ -60,14 +64,15 @@ class BottleneckBlock(nn.Module):
         out = self.conv1(x)
         out = self.conv2(out)
         out = self.conv3(out)
-        
+
         if self.downsample:
             residual = self.downsample(x)
-            
+
         out += residual
         out = self.relu(out)
         return out
-    
+
+
 class SkipConnections(nn.Module):
     def __init__(self, dropout: float) -> None:
         super().__init__()
@@ -79,7 +84,8 @@ class SkipConnections(nn.Module):
         y = sublayer(y)
         y = self.dropout(y)
         return x + y
-    
+
+
 class ViTResidual(nn.Module):
     def __init__(self, hidden_d, n_heads, mlp_ratio=4):
         super(ViTResidual, self).__init__()
