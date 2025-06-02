@@ -1,12 +1,15 @@
 MODEL_REGISTRY = {}
 _imported = False
 
+from refrakt_core.logging import get_global_logger
+
 def register_model(name):
     def decorator(cls):
+        logger = get_global_logger()
         if name in MODEL_REGISTRY:
-            print(f"Warning: Model '{name}' already registered. Skipping.")
+            logger.debug(f"Warning: Model '{name}' already registered. Skipping.")
             return cls
-        print(f"Registering model: {name}")
+        logger.debug(f"Registering model: {name}")
         MODEL_REGISTRY[name] = cls
         return cls
     return decorator
@@ -21,4 +24,6 @@ def get_model(name, *args, **kwargs):
         raise ValueError(f"Model '{name}' not found. Available: {list(MODEL_REGISTRY.keys())}")
     return MODEL_REGISTRY[name](*args, **kwargs)
 
-print("MODEL_REGISTRY ID:", id(MODEL_REGISTRY))
+def log_registry_id():
+    logger = get_global_logger()
+    logger.debug(f"MODEL REGISTRY ID: {id(MODEL_REGISTRY)}")

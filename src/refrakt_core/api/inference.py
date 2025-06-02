@@ -1,17 +1,22 @@
 import os
+import sys
 import traceback
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 import torch
 from omegaconf import OmegaConf
 
+from refrakt_core.api.core.logger import RefraktLogger
+from refrakt_core.logging import get_global_logger
 from refrakt_core.api.builders.dataloader_builder import build_dataloader
 from refrakt_core.api.builders.dataset_builder import build_dataset
 from refrakt_core.api.builders.model_builder import build_model
 from refrakt_core.api.core.utils import import_modules, setup_device
 
 
-def inference(cfg: Union[str, OmegaConf], model_path: str, data: Any = None) -> Dict[str, Any]:
+def inference(cfg: Union[str, OmegaConf], model_path: str, 
+                data: Any = None, 
+                logger: Optional[RefraktLogger] = None) -> Dict[str, Any]:
     """
     Run inference with a trained model.
     
@@ -23,12 +28,17 @@ def inference(cfg: Union[str, OmegaConf], model_path: str, data: Any = None) -> 
     Returns:
         Dict containing inference results
     """
+
+    if logger is None:
+        logger = RefraktLogger("./logs", console=True)
+
     try:
         # Load configuration
         if isinstance(cfg, str):
             config = OmegaConf.load(cfg)
         else:
             config = cfg
+
         
         modules = import_modules()
         
@@ -38,7 +48,7 @@ def inference(cfg: Union[str, OmegaConf], model_path: str, data: Any = None) -> 
         else:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         
-        print(f"Using device: {device}")
+        logger.info(f"Using device: {device}")
         
         # Build model
         model = build_model(config, modules, device)
@@ -47,7 +57,7 @@ def inference(cfg: Union[str, OmegaConf], model_path: str, data: Any = None) -> 
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model checkpoint not found: {model_path}")
         
-        print(f"Loading model from {model_path}")
+        logger.info(f"Loading model from {model_path}")
         checkpoint = torch.load(model_path, map_location=device, weights_only=False)
         
         # Handle both checkpoint formats
@@ -61,7 +71,7 @@ def inference(cfg: Union[str, OmegaConf], model_path: str, data: Any = None) -> 
         # Prepare data
         if data is None:
             # Use test dataset if no data provided
-            print("No data provided, using test dataset...")
+            logger.info("No data provided, using test dataset...")
             test_cfg = OmegaConf.merge(config.dataset, OmegaConf.create({"params": {"train": False}}))
             test_dataset = build_dataset(test_cfg)
             data_loader = build_dataloader(test_dataset, config.dataloader)
@@ -70,7 +80,7 @@ def inference(cfg: Union[str, OmegaConf], model_path: str, data: Any = None) -> 
             data_loader = data
         
         # Run inference
-        print("\nRunning inference...")
+        logger.info("\nRunning inference...")
         results = []
         
         with torch.no_grad():
@@ -91,9 +101,9 @@ def inference(cfg: Union[str, OmegaConf], model_path: str, data: Any = None) -> 
                 results.append(batch_results)
                 
                 if batch_idx % 100 == 0:
-                    print(f"Processed batch {batch_idx + 1}/{len(data_loader)}")
+                    logger.info(f"Processed batch {batch_idx + 1}/{len(data_loader)}")
         
-        print("\nInference completed successfully!")
+        logger.info("\nInference completed successfully!")
         
         return {
             "model": model,
@@ -102,6 +112,6 @@ def inference(cfg: Union[str, OmegaConf], model_path: str, data: Any = None) -> 
         }
         
     except Exception as e:
-        print(f"\n❌ Inference failed: {str(e)}")
-        traceback.print_exc()
-        raise
+        logger.error(f"\n❌ Training failed: {str(e)}")
+        logger.error(traceback.format_exc())
+        sys.exit(1)

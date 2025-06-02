@@ -1,9 +1,12 @@
 TRAINER_REGISTRY = {}
 _imported = False
 
+from refrakt_core.logging import get_global_logger
+
 def register_trainer(name):
     def decorator(cls):
-        print(f"Registering trainer: {name}")
+        logger = get_global_logger()
+        logger.debug(f"Registering trainer: {name}")
         TRAINER_REGISTRY[name] = cls
         return cls
     return decorator
@@ -19,4 +22,6 @@ def get_trainer(name):
         raise ValueError(f"Trainer '{name}' not found. Available: {list(TRAINER_REGISTRY.keys())}")
     return TRAINER_REGISTRY[name]  # Return the class, not an instance
 
-print("TRAINER_REGISTRY ID:", id(TRAINER_REGISTRY))
+def log_registry_id():
+    logger = get_global_logger()
+    logger.debug(f"TRAINER REGISTRY ID: {id(TRAINER_REGISTRY)}")

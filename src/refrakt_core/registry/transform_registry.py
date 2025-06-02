@@ -2,13 +2,16 @@
 TRANSFORM_REGISTRY = {}
 _imported = False
 
+from refrakt_core.logging import get_global_logger
+
 def register_transform(name):
     """Decorator to register a transform class with the given name."""
     def decorator(cls):
+        logger = get_global_logger()
         if name in TRANSFORM_REGISTRY:
-            print(f"Warning: Transform '{name}' already registered. Skipping.")
+            logger.debug(f"Warning: Transform '{name}' already registered. Skipping.")
             return cls
-        print(f"Registering transform: {name}")
+        logger.debug(f"Registering transform: {name}")
         TRANSFORM_REGISTRY[name] = cls
         return cls
     return decorator
@@ -37,4 +40,7 @@ def get_transform(name, *args, **kwargs):
     
     return TRANSFORM_REGISTRY[name](*args, **kwargs)
 
-print("TRANSFORM_REGISTRY ID:", id(TRANSFORM_REGISTRY))
+def log_registry_id():
+    logger = get_global_logger()
+    logger.debug(f"TRANSFORM REGISTRY ID: {id(TRANSFORM_REGISTRY)}")
+

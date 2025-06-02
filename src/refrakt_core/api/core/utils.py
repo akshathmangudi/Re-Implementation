@@ -79,3 +79,18 @@ def build_model_components(cfg: OmegaConf) -> ModelComponents:
     # Build scheduler
     scheduler = build_scheduler(cfg, optimizer)
     return ModelComponents(model, loss_fn, optimizer, scheduler, device)
+
+def flatten_and_filter_config(cfg: dict) -> dict:
+    flat_cfg = {}
+
+    def _flatten(prefix, d):
+        for k, v in d.items():
+            key = f"{prefix}.{k}" if prefix else k
+            if isinstance(v, (int, float, str, bool, torch.Tensor)):
+                flat_cfg[key] = v
+            elif isinstance(v, dict):
+                _flatten(key, v)
+            # skip others (lists, None, etc.)
+
+    _flatten('', cfg)
+    return flat_cfg

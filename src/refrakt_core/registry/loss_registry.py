@@ -1,12 +1,15 @@
 LOSS_REGISTRY = {}
 _imported = False
 
+from refrakt_core.logging import get_global_logger
+
 def register_loss(name):
     def decorator(cls_or_fn):
+        logger = get_global_logger()
         if name in LOSS_REGISTRY:
-            print(f"Warning: Loss '{name}' already registered. Skipping.")
+            logger.debug(f"Warning: Loss '{name}' already registered. Skipping.")
             return cls_or_fn
-        print(f"Registering loss: {name}")
+        logger.debug(f"Registering loss: {name}")
         LOSS_REGISTRY[name] = cls_or_fn
         return cls_or_fn
     return decorator
@@ -35,4 +38,7 @@ def get_loss(name, *args, **kwargs):
     
     return LOSS_REGISTRY[name](*args, **kwargs)
 
-print("LOSS_REGISTRY ID:", id(LOSS_REGISTRY))
+def log_registry_id():
+    logger = get_global_logger()
+    logger.debug(f"LOSS REGISTRY ID: {id(LOSS_REGISTRY)}")
+

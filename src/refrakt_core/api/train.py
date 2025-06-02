@@ -7,6 +7,9 @@ from typing import Optional
 import torch
 from omegaconf import OmegaConf
 
+import traceback
+
+
 # Add project root to path
 project_root = Path(__file__).parent.parent.resolve()
 sys.path.append(str(project_root))
@@ -16,10 +19,14 @@ torch.cuda.empty_cache()
 from refrakt_core.api.builders.dataloader_builder import build_dataloader
 # Import new builders
 from refrakt_core.api.builders.dataset_builder import build_dataset
+from refrakt_core.logging import get_global_logger
+from refrakt_core.api.core.logger import RefraktLogger
 
 
-def train(config_path: str, model_path: Optional[str] = None):
-    # === Import within function to handle path issues ===
+def train(config_path: str, 
+        model_path: Optional[str] = None, 
+        logger: Optional[RefraktLogger] = None):
+
     import refrakt_core.datasets
     import refrakt_core.losses
     import refrakt_core.models
@@ -29,34 +36,40 @@ def train(config_path: str, model_path: Optional[str] = None):
     from refrakt_core.registry.model_registry import get_model
     from refrakt_core.registry.trainer_registry import get_trainer
 
+    if logger is None:  
+            logger = get_global_logger()
+
     try:
         # Load configuration
         cfg = OmegaConf.load(config_path)
         
+        if logger:
+            logger.log_config(OmegaConf.to_container(cfg, resolve=True))
+
         # Set device
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Using device: {device}")
+        logger.info(f"Using device: {device}")
 
         # === Dataset & DataLoader ===
-        print("Building datasets...")
+        logger.info("Building datasets...")
         train_dataset = build_dataset(cfg.dataset)
         # For validation, use same dataset config but with train=False
         val_cfg = OmegaConf.merge(cfg.dataset, OmegaConf.create({"params": {"train": False}}))
         val_dataset = build_dataset(val_cfg)
         
-        print("Building data loaders...")
+        logger.info("Building data loaders...")
         train_loader = build_dataloader(train_dataset, cfg.dataloader)
         val_loader = build_dataloader(val_dataset, cfg.dataloader)
-        print(f"Train batches: {len(train_loader)}, Val batches: {len(val_loader)}")
+        logger.info(f"Train batches: {len(train_loader)}, Val batches: {len(val_loader)}")
 
         # === Model ===
-        print("Building model...")
+        logger.info("Building model...")
         model_params = cfg.model.params or {}
         model = get_model(cfg.model.name, **model_params).to(device)
-        print(f"Model: {cfg.model.name} with params: {model_params}")
+        logger.info(f"Model: {cfg.model.name} with params: {model_params}")
 
         # ===== Updated Loss Handling =====
-        print("Building loss function...")
+        logger.info("Building loss function...")
         if cfg.loss.get("generator") or cfg.loss.get("discriminator"):
             # Handle GAN-style loss without explicit 'components' key
             loss_fn = {}
@@ -66,7 +79,7 @@ def train(config_path: str, model_path: Optional[str] = None):
                     loss_name = comp_cfg["name"]
                     loss_params = comp_cfg.get("params", {})
                     loss_fn[comp_name] = get_loss(loss_name, **loss_params).to(device)
-                    print(f"Loss ({comp_name}): {loss_name} with params: {loss_params}")
+                    logger.info(f"Loss ({comp_name}): {loss_name} with params: {loss_params}")
         elif cfg.loss.get("components"):
             # Handle multi-component loss with explicit 'components' key
             loss_fn = {}
@@ -74,16 +87,16 @@ def train(config_path: str, model_path: Optional[str] = None):
                 loss_name = comp_cfg["name"]
                 loss_params = comp_cfg.get("params", {})
                 loss_fn[comp_name] = get_loss(loss_name, **loss_params).to(device)
-                print(f"Loss ({comp_name}): {loss_name} with params: {loss_params}")
+                logger.info(f"Loss ({comp_name}): {loss_name} with params: {loss_params}")
         else:
             # Standard single loss
             loss_name = cfg.loss.name
             loss_params = cfg.loss.get("params", {})
             loss_fn = get_loss(loss_name, **loss_params).to(device)
-            print(f"Loss: {loss_name} with params: {loss_params}")
+            logger.info(f"Loss: {loss_name} with params: {loss_params}")
         
         # === Optimizer (updated for GAN support) ===
-        print("Building optimizer...")
+        logger.info("Building optimizer...")
         opt_map = {
             "adam": torch.optim.Adam,
             "sgd": torch.optim.SGD,
@@ -113,7 +126,7 @@ def train(config_path: str, model_path: Optional[str] = None):
                         raise ValueError(f"Unknown optimizer component: {comp_name}")
                     
                     optimizer[comp_name] = opt_cls(parameters, **opt_params)
-                    print(f"Optimizer ({comp_name}): {opt_name} with params: {opt_params}")
+                    logger.info(f"Optimizer ({comp_name}): {opt_name} with params: {opt_params}")
                 
         elif cfg.optimizer.get("components"):
             # Handle multi-component optimizer (GAN)
@@ -135,7 +148,7 @@ def train(config_path: str, model_path: Optional[str] = None):
                     raise ValueError(f"Unknown optimizer component: {comp_name}")
                 
                 optimizer[comp_name] = opt_cls(parameters, **opt_params)
-                print(f"Optimizer ({comp_name}): {opt_name} with params: {opt_params}")
+                logger.info(f"Optimizer ({comp_name}): {opt_name} with params: {opt_params}")
         else:
             # Standard single optimizer (VAE, AE, etc.)
             opt_cls = opt_map.get(cfg.optimizer.name.lower())
@@ -144,12 +157,12 @@ def train(config_path: str, model_path: Optional[str] = None):
             
             optimizer_params = cfg.optimizer.params or {}
             optimizer = opt_cls(model.parameters(), **optimizer_params)
-            print(f"Optimizer: {cfg.optimizer.name} with params: {optimizer_params}")
+            logger.info(f"Optimizer: {cfg.optimizer.name} with params: {optimizer_params}")
 
         # === Scheduler ===
         scheduler = None
         if cfg.scheduler and cfg.scheduler.name:
-            print("Building scheduler...")
+            logger.info("Building scheduler...")
             sched_map = {
                 "cosine": torch.optim.lr_scheduler.CosineAnnealingLR,
                 "steplr": torch.optim.lr_scheduler.StepLR,
@@ -162,10 +175,10 @@ def train(config_path: str, model_path: Optional[str] = None):
 
             scheduler_params = cfg.scheduler.params or {}
             scheduler = scheduler_cls(optimizer, **scheduler_params)
-            print(f"Scheduler: {cfg.scheduler.name} with params: {scheduler_params}")
+            logger.info(f"Scheduler: {cfg.scheduler.name} with params: {scheduler_params}")
 
         # === Trainer Initialization ===
-        print("Initializing trainer...")
+        logger.info("Initializing trainer...")
         trainer_cls = get_trainer(cfg.trainer.name)
         trainer_params = OmegaConf.to_container(cfg.trainer.params, resolve=True) if cfg.trainer.params else {}
 
@@ -202,30 +215,15 @@ def train(config_path: str, model_path: Optional[str] = None):
             )
 
         # === Training ===
-        print(f"\nStarting training for {num_epochs} epochs...")  # Use extracted num_epochs
+        logger.info(f"\nStarting training for {num_epochs} epochs...")  # Use extracted num_epochs
         trainer.train(num_epochs=num_epochs)
 
-        print("Saving model now...")
+        logger.info("Saving model now...")
         trainer.save(path=model_path)
-
         
-        # === Final Evaluation ===
-        # print("\nRunning final evaluation...")
-        # trainer.evaluate()
-        
-        print("\nTraining completed successfully!")
+        logger.info("\nTraining completed successfully!")
 
     except Exception as e:
-        print(f"\n❌ Training failed: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"\n❌ Training failed: {str(e)}")
+        logger.error(traceback.format_exc())
         sys.exit(1)
-
-# if __name__ == "__main__":
-#     import argparse
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("--config", type=str, required=True,
-#                         help="Path to configuration YAML file")
-#     args = parser.parse_args()
-    
-#     train(args.config)

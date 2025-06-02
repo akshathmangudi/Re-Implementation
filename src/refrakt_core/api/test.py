@@ -1,9 +1,13 @@
 import os
+import sys
 import traceback
 from typing import Any, Dict, Optional, Union
 
 import torch
 from omegaconf import OmegaConf
+
+from refrakt_core.api.core.logger import RefraktLogger
+from refrakt_core.logging import get_global_logger
 
 # Add direct imports for dataset and dataloader builders
 from refrakt_core.api.builders.dataloader_builder import build_dataloader
@@ -12,7 +16,9 @@ from refrakt_core.api.builders.trainer_builder import initialize_trainer
 from refrakt_core.api.core.utils import build_model_components, import_modules
 
 
-def test(cfg: Union[str, OmegaConf], model_path: Optional[str] = None) -> Dict[str, Any]:
+def test(cfg: Union[str, OmegaConf], 
+        model_path: Optional[str] = None, 
+        logger: Optional[RefraktLogger] = None) -> Dict[str, Any]:
     """
     Test/evaluate a model based on the provided configuration.
     
@@ -23,6 +29,10 @@ def test(cfg: Union[str, OmegaConf], model_path: Optional[str] = None) -> Dict[s
     Returns:
         Dict containing evaluation results
     """
+
+    if logger is None:  
+            logger = get_global_logger()
+
     try:
         # Load configuration
         if isinstance(cfg, str):
@@ -30,21 +40,24 @@ def test(cfg: Union[str, OmegaConf], model_path: Optional[str] = None) -> Dict[s
         else:
             config = cfg
 
+        logger.log_config(OmegaConf.to_container(config, resolve=True))
+
+
         modules = import_modules()
         
         # === Build Dataset & DataLoader ===
-        print("Building test datasets...")
+        logger.info("Building test datasets...")
         test_cfg = OmegaConf.merge(config.dataset, OmegaConf.create({"params": {"train": False}}))
         test_dataset = build_dataset(test_cfg)
         test_loader = build_dataloader(test_dataset, config.dataloader)
-        print(f"Test batches: {len(test_loader)}")
+        logger.info(f"Test batches: {len(test_loader)}")
         
         # Build model components
         components = build_model_components(config)
         
         # Load model checkpoint if provided
         if model_path and os.path.exists(model_path):
-            print(f"Loading model from {model_path}")
+            logger.info(f"Loading model from {model_path}")
             checkpoint = torch.load(model_path, map_location=components.device)
             components.model.load_state_dict(checkpoint.get('model_state_dict', checkpoint))
         
@@ -56,10 +69,10 @@ def test(cfg: Union[str, OmegaConf], model_path: Optional[str] = None) -> Dict[s
         )
         
         # Run evaluation
-        print("\nRunning evaluation...")
+        logger.info("\nRunning evaluation...")
         eval_results = trainer.evaluate()
         
-        print("\nEvaluation completed successfully!")
+        logger.info("\nEvaluation completed successfully!")
         
         return {
             "model": components.model,
@@ -68,6 +81,6 @@ def test(cfg: Union[str, OmegaConf], model_path: Optional[str] = None) -> Dict[s
         }
         
     except Exception as e:
-        print(f"\n❌ Evaluation failed: {str(e)}")
-        traceback.print_exc()
-        raise
+        logger.error(f"\n❌ Training failed: {str(e)}")
+        logger.error(traceback.format_exc())
+        sys.exit(1)
