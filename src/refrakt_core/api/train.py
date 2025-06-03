@@ -73,6 +73,18 @@ def train(
         model = get_model(cfg.model.name, **model_params).to(device)
         logger.info(f"Model: {cfg.model.name} with params: {model_params}")
 
+        try:
+            # Get sample batch for model graph logging
+            sample_batch = next(iter(train_loader))
+            if isinstance(sample_batch, (tuple, list)):
+                sample_input = sample_batch[0]
+            else:
+                sample_input = sample_batch
+            sample_input = sample_input.to(device)
+            logger.log_model_graph(model, sample_input)
+        except Exception as e:
+            logger.error(f"Model graph logging failed: {str(e)}")
+
         # ===== Updated Loss Handling =====
         logger.info("Building loss function...")
         if cfg.loss.get("generator") or cfg.loss.get("discriminator"):
@@ -211,6 +223,9 @@ def train(
         num_epochs = trainer_params.pop("num_epochs", 1)
         device_param = trainer_params.pop("device", device)
         final_device = device_param if device_param else device
+
+        trainer_params["logger"] = logger
+
 
         # Handle different trainer types
         if cfg.trainer.name != "gan":

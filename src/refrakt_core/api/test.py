@@ -79,9 +79,37 @@ def test(
             save_dir=None,
         )
 
-        # Run evaluation
+        trainer.logger = logger
         logger.info("\nRunning evaluation...")
         eval_results = trainer.evaluate()
+
+
+        # Run evaluation
+        # ====== NEW: Visualize test results ======
+        try:
+            # Get sample batch for visualization
+            sample_batch = next(iter(test_loader))
+            if isinstance(sample_batch, (tuple, list)):
+                inputs = sample_batch[0].to(components.device)
+                targets = sample_batch[1] if len(sample_batch) > 1 else None
+            else:
+                inputs = sample_batch.to(components.device)
+                targets = None
+                
+            # Run model
+            with torch.no_grad():
+                outputs = components.model(inputs)
+                
+            # Log visualization
+            logger.log_inference_results(
+                inputs=inputs,
+                outputs=outputs,
+                targets=targets,
+                step=0  # Use step 0 for test
+            )
+        except Exception as e:
+            logger.error(f"Test visualization failed: {str(e)}")
+        # ====== END NEW ======
 
         logger.info("\nEvaluation completed successfully!")
 

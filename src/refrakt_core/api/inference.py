@@ -91,12 +91,23 @@ def inference(
         logger.info("\nRunning inference...")
         results = []
 
+        # ====== NEW: Collect inputs and outputs for visualization ======
+        vis_inputs = []
+        vis_targets = []
+        vis_outputs = []
+        max_visualization = 8
+        # ====== END NEW ======
+
         with torch.no_grad():
             for batch_idx, batch in enumerate(data_loader):
                 if isinstance(batch, (list, tuple)):
                     inputs = batch[0].to(device)
+                    # ====== NEW: Store targets if available ======
+                    targets = batch[1] if len(batch) > 1 else None
+                    # ====== END NEW ======
                 else:
                     inputs = batch.to(device)
+                    targets = None
 
                 outputs = model(inputs)
 
@@ -108,8 +119,42 @@ def inference(
 
                 results.append(batch_results)
 
+                if len(vis_inputs) < max_visualization:
+                    vis_inputs.append(inputs.cpu())
+                    if isinstance(outputs, dict):
+                        vis_outputs.append(next(iter(outputs.values())).cpu())
+                    else:
+                        vis_outputs.append(outputs.cpu())
+
+                    if targets is not None:
+                        vis_targets.append(targets.cpu())  # ✅ Add this line
+
+
                 if batch_idx % 100 == 0:
                     logger.info(f"Processed batch {batch_idx + 1}/{len(data_loader)}")
+
+        # ====== NEW: Log inference visualization ======
+        try:
+            if vis_inputs:
+                inputs_vis = torch.cat([t.cpu() for t in vis_inputs])[:max_visualization]
+                outputs_vis = torch.cat([t.cpu() for t in vis_outputs])[:max_visualization]
+                targets_vis = None
+                if vis_targets:
+                    targets_vis = torch.cat([t.cpu() for t in vis_targets])[:max_visualization]
+
+                if outputs_vis.ndim == 4:
+                    logger.log_inference_results(
+                        inputs=inputs_vis,
+                        outputs=outputs_vis,
+                        targets=targets_vis,
+                        step=0
+                    )
+                else:
+                    logger.info("Skipping visual logging: output is not a 4D image tensor")
+        except Exception as e:
+            logger.error(f"Inference visualization failed: {str(e)}")
+        # ====== END NEW ======
+
 
         logger.info("\nInference completed successfully!")
 

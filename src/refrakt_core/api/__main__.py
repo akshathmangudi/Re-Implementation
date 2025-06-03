@@ -36,14 +36,20 @@ def main():
     from refrakt_core.api.core.logger import RefraktLogger
     from refrakt_core.logging import set_global_logger
 
-    log_dir = os.path.abspath(args.log_dir)
+    cfg = OmegaConf.load(args.config)
+    model_name = cfg.model.name
 
     logger = RefraktLogger(
-        log_dir=log_dir, log_types=args.log_type, console=args.console, debug=args.debug
+        model_name=model_name,
+        base_log_dir=args.log_dir,
+        log_types=args.log_type,
+        console=args.console,
+        debug=args.debug
     )
 
     logger.info(f"Logging initialized. Log file: {logger.log_file}")
     set_global_logger(logger)
+
 
     # Now import pipeline components
     from refrakt_core.api.inference import inference
@@ -81,11 +87,13 @@ def main():
             logger.info("🔮 Inference phase started")
             inference(args.config, model_path=model_path, logger=logger)
 
+    except KeyboardInterrupt:
+        logger.warning("Training interrupted by user")
     except Exception as e:
         logger.error(f"Pipeline failed: {str(e)}")
         raise
-
     finally:
+        logger.info("Finalizing and saving logs...")
         logger.close()
 
 
